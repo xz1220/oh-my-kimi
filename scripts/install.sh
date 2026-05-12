@@ -40,6 +40,7 @@ if [ "$SOURCE_DIR" != "$OMK_HOME" ]; then
     --exclude='__pycache__' \
     --exclude='*.pyc' \
     --exclude='.venv' \
+    --exclude='.upstream-refs' \
     -cf - .) | (cd "$OMK_HOME.tmp" && tar -xf -)
   rm -rf "$OMK_HOME"
   mv "$OMK_HOME.tmp" "$OMK_HOME"
