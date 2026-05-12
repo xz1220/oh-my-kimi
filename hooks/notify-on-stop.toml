@@ -1,0 +1,5 @@
+# Desktop notification when a Kimi turn finishes.
+[[hooks]]
+event = "Stop"
+command = "{{OMK_HOME}}/hooks/notify-on-stop.sh"
+timeout = 5

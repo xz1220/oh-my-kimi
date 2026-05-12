@@ -12,7 +12,7 @@
 
 ### 发现一：OMC 与 OMX 不是不同哲学，是同一 spec 在不同 host 上的 down-port
 
-调研（2026-05-11，见 `docs/research/omc-omx-divergence.md`，TBD 补）发现：
+调研（2026-05-11，见 `docs/research/omc-omx-divergence.md`）发现：
 
 - OMC 有 19 个 agent，OMX 有 33 个专家 prompt + `$team` 并行；**两者共享角色谱系**（executor / critic / architect / orchestrator / debugger 等）
 - OMX README 自己写明 "Inspired by oh-my-opencode" —— 整个谱系起源于另一个韩国开发者 code-yeongyu 的 opencode 项目，作者本身就是在做横向移植
@@ -21,7 +21,7 @@
 
 ### 发现二：Kimi CLI 处于「Claude Code 那一极」，可走 OMC 路线
 
-调研（2026-05-11，见 `docs/research/kimi-cli-extension-surface.md`，TBD 补）：
+调研（2026-05-11，见 `docs/research/kimi-cli-extension-surface.md`）：
 
 | 关键原语 | Claude Code | Codex CLI | **Kimi CLI** |
 |---|---|---|---|
@@ -217,4 +217,4 @@ OMC / Kimi CLI 升级都可能 break。
   - [`Yeachan-Heo/oh-my-claudecode`](https://github.com/Yeachan-Heo/oh-my-claudecode)（MIT，**主要 fork 来源**）
   - [`Yeachan-Heo/oh-my-codex`](https://github.com/Yeachan-Heo/oh-my-codex)（license 待核实）
   - [`code-yeongyu/oh-my-openagent`](https://github.com/code-yeongyu/oh-my-openagent)（谱系真正起源）
-- 邻近 idea：[`prospector`](../../prospector)（云端 skill 分发 —— 与本项目互补：oh-my-kimi 是「精选包」，prospector 是「发现 + 加载机制」）
+- 邻近 idea：`prospector`（云端 skill 分发；与本项目互补：oh-my-kimi 是「精选包」，prospector 是「发现 + 加载机制」）

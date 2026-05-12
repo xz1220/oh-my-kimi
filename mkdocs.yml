@@ -1,0 +1,36 @@
+site_name: oh-my-kimi
+site_description: Kimi CLI agent, skill, hook, and MCP bundle
+site_url: https://xz1220.github.io/oh-my-kimi/
+repo_url: https://github.com/xz1220/oh-my-kimi
+repo_name: xz1220/oh-my-kimi
+
+theme:
+  name: material
+  language: zh
+  palette:
+    - scheme: default
+      primary: black
+      accent: indigo
+  features:
+    - navigation.sections
+    - navigation.instant
+    - content.code.copy
+
+nav:
+  - Home: index.md
+  - Install: install.md
+  - Skills: skills.md
+  - Agents: agents.md
+  - Hooks: hooks.md
+  - Architecture: architecture.md
+  - Attribution: attribution.md
+  - Research:
+      - Kimi CLI Extension Surface: research/kimi-cli-extension-surface.md
+      - OMC / OMX Divergence: research/omc-omx-divergence.md
+  - PRD: prd.md
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true

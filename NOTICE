@@ -1,0 +1,59 @@
+oh-my-kimi
+Copyright 2026 xz1220 and contributors
+
+This product is licensed under the Apache License, Version 2.0. See LICENSE
+for the full text.
+
+================================================================================
+Third-party attribution
+================================================================================
+
+This project is a downstream port of the "oh-my-*" agent harness lineage
+originated by code-yeongyu and Yeachan-Heo, both MIT-licensed. The skill
+catalog, subagent role definitions, and workflow conventions in this
+repository were derived from:
+
+  oh-my-claudecode (OMC) by Yeachan-Heo
+    Source : https://github.com/Yeachan-Heo/oh-my-claudecode
+    License: MIT
+    Used   : agents/*.md (executor, critic, architect, planner, debugger,
+             code-reviewer, security-reviewer, test-engineer, analyst,
+             git-master, document-specialist, designer) and skills/*
+             (deep-interview, autopilot, code-review, plan, debug, ...)
+             were referenced when authoring the Kimi-CLI-format equivalents
+             under agents/ and skills/.
+
+  oh-my-codex (OMX) by Yeachan-Heo
+    Source : https://github.com/Yeachan-Heo/oh-my-codex
+    License: MIT (license file pending upstream confirmation)
+    Used   : the ralph / autopilot / deep-interview workflow design and
+             the SKILL.md frontmatter convention used in skills/.
+
+  oh-my-openagent (formerly oh-my-opencode) by code-yeongyu
+    Source : https://github.com/code-yeongyu/oh-my-openagent
+    License: MIT
+    Used   : the broader "oh-my-* on a CLI host" design pattern that all
+             downstream ports inherit.
+
+Per the MIT terms of the upstream projects, the copyright notices above are
+preserved verbatim. Modifications include but are not limited to:
+
+  - YAML wrapper files (agents/*.yaml) targeting the Kimi CLI agent-spec
+    schema documented at src/kimi_cli/agentspec.py.
+  - Path rewrites .omc/ → .kimi/ and .omx/ → .kimi/ throughout skills.
+  - Host-name rewrites Claude Code / Codex CLI → Kimi CLI in user-facing
+    text.
+  - Install scripts (scripts/install.sh, scripts/uninstall.sh) and hook
+    templates targeting Kimi CLI's config.toml schema.
+
+================================================================================
+Upstream Kimi CLI
+================================================================================
+
+The host runtime, Moonshot Kimi CLI, is licensed under Apache-2.0 by
+Moonshot AI:
+
+  Source : https://github.com/MoonshotAI/kimi-cli
+  License: Apache-2.0
+
+This project depends on but does not redistribute Kimi CLI.

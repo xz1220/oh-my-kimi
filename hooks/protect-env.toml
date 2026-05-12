@@ -1,0 +1,6 @@
+# Block accidental writes to secrets and local credential files.
+[[hooks]]
+event = "PreToolUse"
+matcher = "WriteFile|StrReplaceFile|Shell"
+command = "{{OMK_HOME}}/hooks/protect-env.sh"
+timeout = 10

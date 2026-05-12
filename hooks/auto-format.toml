@@ -1,0 +1,6 @@
+# Best-effort formatting after file writes. Missing formatters are ignored.
+[[hooks]]
+event = "PostToolUse"
+matcher = "WriteFile|StrReplaceFile"
+command = "{{OMK_HOME}}/hooks/auto-format.sh"
+timeout = 60

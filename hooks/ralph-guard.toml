@@ -1,0 +1,5 @@
+# Lightweight reminder to verify before ending long-running Ralph-style work.
+[[hooks]]
+event = "Stop"
+command = "{{OMK_HOME}}/hooks/ralph-guard.sh"
+timeout = 5

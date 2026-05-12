@@ -1,0 +1,63 @@
+version: 1
+agent:
+  extend: default
+  name: oh-my-kimi
+  system_prompt_path: ./oh-my-kimi.md
+  subagents:
+    analyst:
+      path: ./analyst.yaml
+      description: "Pre-planning consultant for requirements analysis (Opus)"
+    architect:
+      path: ./architect.yaml
+      description: "Strategic Architecture & Debugging Advisor (Opus, READ-ONLY)"
+    code-reviewer:
+      path: ./code-reviewer.yaml
+      description: "Expert code review specialist with severity-rated feedback, logic defect detection, SOLID principle checks, style, performance, and quality strategy"
+    code-simplifier:
+      path: ./code-simplifier.yaml
+      description: "Simplifies and refines code for clarity, consistency, and maintainability while preserving all functionality. Focuses on recently modified code unless instructed otherwise."
+    critic:
+      path: ./critic.yaml
+      description: "Work plan and code review expert — thorough, structured, multi-perspective (Opus)"
+    debugger:
+      path: ./debugger.yaml
+      description: "Root-cause analysis, regression isolation, stack trace analysis, build/compilation error resolution"
+    designer:
+      path: ./designer.yaml
+      description: "UI/UX Designer-Developer for stunning interfaces (Sonnet)"
+    document-specialist:
+      path: ./document-specialist.yaml
+      description: "External Documentation & Reference Specialist"
+    executor:
+      path: ./executor.yaml
+      description: "Focused task executor for implementation work (Sonnet)"
+    explore:
+      path: ./explore.yaml
+      description: "Codebase search specialist for finding files and code patterns"
+    git-master:
+      path: ./git-master.yaml
+      description: "Git expert for atomic commits, rebasing, and history management with style detection"
+    planner:
+      path: ./planner.yaml
+      description: "Strategic planning consultant with interview workflow (Opus)"
+    qa-tester:
+      path: ./qa-tester.yaml
+      description: "Interactive CLI testing specialist using tmux for session management"
+    scientist:
+      path: ./scientist.yaml
+      description: "Data analysis and research execution specialist"
+    security-reviewer:
+      path: ./security-reviewer.yaml
+      description: "Security vulnerability detection specialist (OWASP Top 10, secrets, unsafe patterns)"
+    test-engineer:
+      path: ./test-engineer.yaml
+      description: "Test strategy, integration/e2e coverage, flaky test hardening, TDD workflows"
+    tracer:
+      path: ./tracer.yaml
+      description: "Evidence-driven causal tracing with competing hypotheses, evidence for/against, uncertainty tracking, and next-probe recommendations"
+    verifier:
+      path: ./verifier.yaml
+      description: "Verification strategy, evidence-based completion checks, test adequacy"
+    writer:
+      path: ./writer.yaml
+      description: "Technical documentation writer for README, API docs, and comments (Haiku)"
