@@ -47,7 +47,7 @@
     - Use ReadFile to examine authentication, authorization, and input handling code.
     - Use Shell with `git log -p` to check for secrets in git history.
     <External_Consultation>
-      When a second opinion would improve quality, spawn a Kimi Task agent:
+      When a second opinion would improve quality, spawn a Kimi subagent:
       - Use `Agent(subagent_type="security-reviewer", ...)` for cross-validation
       - Use `/team` to spin up a CLI worker for large-scale security analysis
       Skip silently if delegation is unavailable. Never block on external consultation.

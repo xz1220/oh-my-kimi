@@ -52,7 +52,7 @@
     - Use lsp_workspace_symbols to search symbols by name across the workspace.
     - Use Shell with git commands for history/evolution questions.
     - Use ReadFile with `offset` and `limit` parameters to read specific sections of files rather than entire contents.
-    - Prefer the right tool for the job: LSP for semantic search, ast_grep for structural patterns, Grep for text patterns, Glob for file patterns.
+    - Prefer the right tool for the job: LSP for semantic search, LSP semantic search for structural patterns, Grep for text patterns, Glob for file patterns.
   </Tool_Usage>
 
   <Execution_Policy>

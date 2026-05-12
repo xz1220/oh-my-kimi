@@ -69,6 +69,9 @@ FORBIDDEN_TOKENS = [
     "Claude Sonnet executor",       # model-tier-tagged executor
     "omx ask ",                     # OMX shell wrapper — Kimi calls advisor CLI directly
     "OMX:TEAM:WORKER",              # AGENTS.md overlay markers — renamed to OMK:TEAM:WORKER
+    # Tool-name regressions found in agent audit (2026-05-12)
+    "Kimi Task agent",              # sed regression: Claude Task -> Kimi Task; should be 'Kimi subagent'
+    "Yeachan-Heo/oh-my-kimi",       # wrong org: was Yeachan-Heo/oh-my-codex pre-sed; we live at xz1220/
 ]
 
 

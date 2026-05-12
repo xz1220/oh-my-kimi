@@ -210,7 +210,7 @@ fi
 ### Fix: Missing/Outdated AGENTS.md
 Fetch latest from GitHub and write to `~/.codex/AGENTS.md`:
 ```
-WebFetch(url: "https://raw.githubusercontent.com/Yeachan-Heo/oh-my-kimi/main/docs/AGENTS.md", prompt: "Return the complete raw markdown content exactly as-is")
+FetchURL(url: "https://raw.githubusercontent.com/xz1220/oh-my-kimi/main/docs/AGENTS.md", prompt: "Return the complete raw markdown content exactly as-is")
 ```
 
 ### Fix: Legacy Curl-Installed Content

@@ -56,7 +56,7 @@
     - Use ReadFile to examine full file context around changes.
     - Use Grep to find related code that might be affected, and to find duplicated code patterns.
     <External_Consultation>
-      When a second opinion would improve quality, spawn a Kimi Task agent:
+      When a second opinion would improve quality, spawn a Kimi subagent:
       - Use `Agent(subagent_type="code-reviewer", ...)` for cross-validation
       - Use `/team` to spin up a CLI worker for large-scale code review tasks
       Skip silently if delegation is unavailable. Never block on external consultation.
