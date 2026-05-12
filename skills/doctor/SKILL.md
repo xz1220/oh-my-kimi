@@ -1,239 +1,292 @@
 ---
 name: doctor
-description: Diagnose and fix oh-my-kimi installation issues
+description: Diagnose and fix an oh-my-kimi installation on Kimi CLI (skills, hooks, wrapper, MCP).
+argument-hint: "[--fix] [--verbose]"
 ---
 
-# Doctor Skill
+# Doctor
 
-Note: All `~/.codex/...` paths in this guide respect `CODEX_HOME` when that environment variable is set.
+Run a structured health check against the local `oh-my-kimi` install and
+surface concrete fix commands for every problem found. Use this when:
 
-## Canonical skill root
+- A `/skill:<name>` invocation says "skill not found" but you believe it
+  was installed.
+- `kimi-omk` errors at launch.
+- A hook does not fire (no `.env` block, no auto-format, etc.).
+- `kimi info` reports `Invalid TOML in configuration file …`.
+- You want to verify a fresh machine before running real work.
 
-oh-my-kimi installs skills to `${CODEX_HOME:-~/.codex}/skills/` — this is the path current Kimi CLI natively loads as its skill root.
+## Do not use when
 
-`~/.agents/skills/` is a **historical legacy path** from an older Kimi CLI release, before Codex settled on `~/.codex` as its home directory. Current Kimi CLI and oh-my-kimi no longer write there.
+- Diagnosing Kimi CLI itself (model errors, login, API key) — that lives
+  with upstream Kimi CLI, not this skill.
+- Diagnosing the host OS network / DNS / TLS — outside scope.
+- Diagnosing skill **content** quality — use the relevant workflow skill
+  (e.g. `/skill:critic`) instead.
 
-**In a mixed oh-my-kimi + plain Codex environment:**
-- **Use**: `${CODEX_HOME:-~/.codex}/skills/` (user scope) or `.codex/skills/` (project scope)
-- **Clean up if present**: `~/.agents/skills/` — if this still exists alongside the canonical root, Codex's Enable/Disable Skills UI will show duplicate entries for any skill present in both trees
-- **Interop rule**: oh-my-kimi writes only to the canonical path; archive or remove `~/.agents/skills/` once you have confirmed `${CODEX_HOME:-~/.codex}/skills/` is your active root
+## What this skill checks
 
-## Task: Run Installation Diagnostics
+The seven things `install.sh` actually does — in the same order — so a
+failure points directly at which install step is broken or got rolled
+back manually:
 
-You are the oh-my-kimi Doctor - diagnose and fix installation issues.
+| # | Check | What it verifies |
+|---|---|---|
+| 1 | Kimi CLI on `PATH` | `kimi` binary exists; version ≥ 1.37 |
+| 2 | `~/.oh-my-kimi/` layout | Repo snapshot was copied (agents/, skills/, hooks/, scripts/) |
+| 3 | Skill symlinks in `~/.kimi/skills/` | Each shipped skill is symlinked to `~/.oh-my-kimi/skills/<name>` |
+| 4 | `~/.local/bin/kimi-omk` wrapper | Exists, executable, points at `oh-my-kimi.yaml` |
+| 5 | Managed hook block in `~/.kimi/config.toml` | Single `# >>> oh-my-kimi >>>` … `# <<< oh-my-kimi <<<` block; TOML parses cleanly |
+| 6 | Hook scripts executable | Every `~/.oh-my-kimi/hooks/*.sh` is `+x` |
+| 7 | (Optional) MCP servers | `kimi mcp list` shows the recommended servers if `--with-mcp` ran |
 
-### Step 1: Check Plugin Version
+A passing run prints `✅` for each line; any failure prints `❌` plus the
+one-line fix command.
 
-Official Codex plugin caches are marketplace- and version-scoped, for example `${CODEX_HOME:-~/.codex}/plugins/cache/$MARKETPLACE_NAME/oh-my-kimi/$VERSION/`. Local installs may use `local` as the version identifier.
+## Procedure
 
-```bash
-# Get installed plugin cache versions across marketplaces.
-# Cache shape: $PLUGIN_CACHE_ROOT/$MARKETPLACE_NAME/oh-my-kimi/$PLUGIN_VERSION/
-PLUGIN_CACHE_ROOT="${CODEX_HOME:-$HOME/.codex}/plugins/cache"
-CACHE_ENTRIES=$(find "$PLUGIN_CACHE_ROOT" -path "*/oh-my-kimi/*" -mindepth 3 -maxdepth 3 -type d 2>/dev/null)
+Walk through the checks below in order. Stop and ask the user before
+running any `--fix` action that mutates state outside `~/.oh-my-kimi/`
+(specifically: editing `~/.kimi/config.toml`, removing user-owned
+symlinks, re-running `install.sh`).
 
-if [[ -z "$CACHE_ENTRIES" ]]; then
-  echo "Installed plugin cache: none"
-else
-  while IFS= read -r VERSION_DIR; do
-    MARKETPLACE_NAME=$(basename "$(dirname "$(dirname "$VERSION_DIR")")")
-    PLUGIN_VERSION=$(basename "$VERSION_DIR")
-    printf 'Installed plugin cache: marketplace=%s version=%s path=%s\n' "$MARKETPLACE_NAME" "$PLUGIN_VERSION" "$VERSION_DIR"
-  done <<< "$CACHE_ENTRIES"
-fi
-
-# Get latest from npm
-LATEST=$(npm view oh-my-kimi version 2>/dev/null)
-echo "Latest npm: $LATEST"
-```
-
-**Diagnosis**:
-- If no cache entry exists: INFO - plugin marketplace artifact not cached; this may be normal when oh-my-kimi was installed only through npm/setup
-- Compare each printed `PLUGIN_VERSION` with `LATEST`; if it differs and is not `local`: WARN - outdated plugin cache
-- If one marketplace has multiple version directories: WARN - stale cache for that marketplace/plugin pair
-- Remember: plugin install/discovery is not a replacement for `npm install -g oh-my-kimi` plus `omk setup`; the packaged plugin carries plugin-scoped companion metadata for optional MCP compatibility servers and apps, with first-party MCP disabled by default, while native/runtime hooks and the rest of oh-my-kimi runtime wiring stay setup-owned
-
-### Step 2: Check Hook Configuration (config.toml + legacy settings.json)
-
-Check `~/.codex/config.toml` first (current Codex config), then check legacy `~/.codex/settings.json` only if it exists.
-
-Look for hook entries pointing to removed scripts like:
-- `bash $HOME/.codex/hooks/keyword-detector.sh`
-- `bash $HOME/.codex/hooks/persistent-mode.sh`
-- `bash $HOME/.codex/hooks/session-start.sh`
-
-**Diagnosis**:
-- If found: CRITICAL - legacy hooks causing duplicates
-
-### Step 3: Check for Legacy Bash Hook Scripts
+### Check 1 — Kimi CLI on PATH
 
 ```bash
-ls -la ~/.codex/hooks/*.sh 2>/dev/null
+command -v kimi >/dev/null 2>&1 \
+  && kimi --version
 ```
 
-**Diagnosis**:
-- If `keyword-detector.sh`, `persistent-mode.sh`, `session-start.sh`, or `stop-continuation.sh` exist: WARN - legacy scripts (can cause confusion)
+Expected output: `kimi 1.37.0` or higher. Anything lower means missing
+primitives (Agent tool, SubagentStart hook, MCP) that several shipped
+skills depend on.
 
-### Step 4: Check AGENTS.md
+Fix: install or upgrade Kimi CLI per
+`https://github.com/MoonshotAI/kimi-cli`. Do **not** alias or shim
+`kimi` to a different binary — `kimi-omk` resolves the real `kimi` from
+`PATH` at runtime.
+
+### Check 2 — install dir layout
 
 ```bash
-# Check if AGENTS.md exists
-ls -la ~/.codex/AGENTS.md 2>/dev/null
-
-# Check for oh-my-kimi marker
-grep -q "oh-my-kimi Multi-Agent System" ~/.codex/AGENTS.md 2>/dev/null && echo "Has oh-my-kimi config" || echo "Missing oh-my-kimi config"
+test -d ~/.oh-my-kimi \
+  && test -f ~/.oh-my-kimi/agents/oh-my-kimi.yaml \
+  && test -d ~/.oh-my-kimi/skills \
+  && test -d ~/.oh-my-kimi/hooks \
+  && test -x ~/.oh-my-kimi/scripts/install.sh \
+  && echo "layout OK"
 ```
 
-**Diagnosis**:
-- If missing: CRITICAL - AGENTS.md not configured
-- If missing oh-my-kimi marker: WARN - outdated AGENTS.md
-
-### Step 5: Check for Stale Plugin Cache
+If any line fails: the user moved or partly deleted the install. Run
+`bash ~/.oh-my-kimi/scripts/install.sh` from any checkout, **or**
+re-clone:
 
 ```bash
-# List marketplace/version cache entries for this plugin
-PLUGIN_CACHE_ROOT="${CODEX_HOME:-$HOME/.codex}/plugins/cache"
-find "$PLUGIN_CACHE_ROOT" -path "*/oh-my-kimi/*" -mindepth 3 -maxdepth 3 -type d 2>/dev/null \
-  | while IFS= read -r VERSION_DIR; do
-      MARKETPLACE_NAME=$(basename "$(dirname "$(dirname "$VERSION_DIR")")")
-      PLUGIN_VERSION=$(basename "$VERSION_DIR")
-      printf '%s\t%s\n' "$MARKETPLACE_NAME" "$PLUGIN_VERSION"
-    done
+git clone https://github.com/xz1220/oh-my-kimi.git ~/.oh-my-kimi
+bash ~/.oh-my-kimi/scripts/install.sh
 ```
 
-**Diagnosis**:
-- If a single marketplace lists multiple versions: WARN - multiple cached versions for that marketplace/plugin pair (cleanup recommended)
-
-### Step 6: Check for Legacy Curl-Installed Content
-
-Check for legacy agents, commands, and historical legacy skill roots from older installs/migrations:
+### Check 3 — skill symlinks
 
 ```bash
-# Check for legacy agents directory
-ls -la ~/.codex/agents/ 2>/dev/null
-
-# Check for legacy commands directory
-ls -la ~/.codex/commands/ 2>/dev/null
-
-# Check canonical current skills directory
-ls -la ${CODEX_HOME:-~/.codex}/skills/ 2>/dev/null
-
-# Check historical legacy skill directory
-ls -la ~/.agents/skills/ 2>/dev/null
+expected=$(ls -d ~/.oh-my-kimi/skills/*/ | wc -l)
+actual=$(find ~/.kimi/skills -maxdepth 1 -type l \
+  -lname '*.oh-my-kimi/skills/*' 2>/dev/null | wc -l)
+echo "expected=$expected installed=$actual"
 ```
 
-**Diagnosis**:
-- If `~/.codex/agents/` exists with oh-my-kimi-related files: WARN - legacy generated agents or hand-installed role files. The Codex plugin can package reusable workflows plus plugin-scoped companion metadata for optional MCP/apps; legacy setup installs native agents, while plugin setup archives stale legacy native-agent files and keeps config/hooks current.
-- If `~/.codex/commands/` exists with oh-my-kimi-related files: WARN - legacy command files from older installs. Current oh-my-kimi uses skills/workflows plus setup-managed native surfaces.
-- If `${CODEX_HOME:-~/.codex}/skills/` exists with oh-my-kimi skills: OK - canonical current user skill root
-- If `~/.agents/skills/` exists: WARN - historical legacy skill root that can overlap with `${CODEX_HOME:-~/.codex}/skills/` and cause duplicate Enable/Disable Skills entries
+Expect `installed == expected`. Mismatch usually means:
 
-Look for files like:
-- `architect.md`, `researcher.md`, `explore.md`, `executor.md`, etc. in agents/
-- `ultrawork.md`, `deepsearch.md`, etc. in commands/
-- Any oh-my-kimi-related `.md` files in skills/
+- `install.sh` saw a pre-existing non-`oh-my-kimi` skill at the same
+  name and skipped it (look for `[oh-my-kimi] warning: skipping
+  existing non-oh-my-kimi skill: …` in the install log). Manually
+  decide whether to keep yours or let `oh-my-kimi` take that slot.
+- The user moved `~/.kimi/skills/` or deleted symlinks by hand.
 
----
-
-## Report Format
-
-After running all checks, output a report:
-
-```
-## oh-my-kimi Doctor Report
-
-### Summary
-[HEALTHY / ISSUES FOUND]
-
-### Checks
-
-| Check | Status | Details |
-|-------|--------|---------|
-| Plugin Version | OK/WARN/CRITICAL | ... |
-| Hook Config (config.toml / legacy settings.json) | OK/CRITICAL | ... |
-| Legacy Scripts (~/.codex/hooks/) | OK/WARN | ... |
-| AGENTS.md | OK/WARN/CRITICAL | ... |
-| Plugin Cache | OK/WARN | ... |
-| Legacy Agents (~/.codex/agents/) | OK/WARN | ... |
-| Legacy Commands (~/.codex/commands/) | OK/WARN | ... |
-| Skills (${CODEX_HOME:-~/.codex}/skills) | OK/WARN | ... |
-| Legacy Skill Root (~/.agents/skills) | OK/WARN | ... |
-
-### Issues Found
-1. [Issue description]
-2. [Issue description]
-
-### Recommended Fixes
-[List fixes based on issues]
-```
-
----
-
-## Auto-Fix (if user confirms)
-
-If issues found, ask user: "Would you like me to fix these issues automatically?"
-
-If yes, apply fixes:
-
-### Fix: Legacy Hooks in legacy settings.json
-If `~/.codex/settings.json` exists, remove the legacy `"hooks"` section (keep other settings intact).
-
-### Fix: Legacy Bash Scripts
-```bash
-rm -f ~/.codex/hooks/keyword-detector.sh
-rm -f ~/.codex/hooks/persistent-mode.sh
-rm -f ~/.codex/hooks/session-start.sh
-rm -f ~/.codex/hooks/stop-continuation.sh
-```
-
-### Fix: Outdated Plugin
-```bash
-# Global cache reset across all marketplaces for this plugin.
-# If you only want one marketplace, set MARKETPLACE_NAME and remove just that subtree instead.
-PLUGIN_CACHE_ROOT="${CODEX_HOME:-$HOME/.codex}/plugins/cache"
-find "$PLUGIN_CACHE_ROOT" -path "*/oh-my-kimi" -type d -prune -exec rm -rf {} +
-echo "Plugin cache cleared across all marketplaces. Restart Kimi CLI to fetch the latest marketplace entry."
-```
-
-### Fix: Stale Cache (multiple versions)
-```bash
-# Keep only the newest version inside the selected marketplace/plugin cache.
-# Set MARKETPLACE_NAME to the exact marketplace printed in Step 1.
-PLUGIN_CACHE_ROOT="${CODEX_HOME:-$HOME/.codex}/plugins/cache"
-PLUGIN_CACHE_DIR="$PLUGIN_CACHE_ROOT/$MARKETPLACE_NAME/oh-my-kimi"
-KEEP_VERSION=$(for dir in "$PLUGIN_CACHE_DIR"/*; do [[ -d "$dir" ]] && basename "$dir"; done | sort -V | tail -1)
-if [[ -n "$KEEP_VERSION" ]]; then
-  find "$PLUGIN_CACHE_DIR" -mindepth 1 -maxdepth 1 -type d ! -name "$KEEP_VERSION" -exec rm -rf {} +
-fi
-```
-
-### Fix: Missing/Outdated AGENTS.md
-Fetch latest from GitHub and write to `~/.codex/AGENTS.md`:
-```
-FetchURL(url: "https://raw.githubusercontent.com/xz1220/oh-my-kimi/main/docs/AGENTS.md", prompt: "Return the complete raw markdown content exactly as-is")
-```
-
-### Fix: Legacy Curl-Installed Content
-
-Remove legacy agents/commands plus the historical `~/.agents/skills` tree if it overlaps with the canonical `${CODEX_HOME:-~/.codex}/skills` install:
+Fix (idempotent — safe to rerun):
 
 ```bash
-# Backup first (optional - ask user)
-# mv ~/.codex/agents ~/.codex/agents.bak
-# mv ~/.codex/commands ~/.codex/commands.bak
-# mv ~/.agents/skills ~/.agents/skills.bak
-
-# Or remove directly
-rm -rf ~/.codex/agents
-rm -rf ~/.codex/commands
-rm -rf ~/.agents/skills
+bash ~/.oh-my-kimi/scripts/install.sh
 ```
 
-**Note**: Only remove if these contain oh-my-kimi-related files. If user has custom agents/commands/skills, warn them and ask before removing.
+To force-replace conflicting skills:
 
----
+```bash
+OMK_FORCE=1 bash ~/.oh-my-kimi/scripts/install.sh
+```
 
-## Post-Fix
+To inspect a single broken slot:
 
-After applying fixes, inform user:
-> Fixes applied. **Restart Kimi CLI** for changes to take effect.
+```bash
+ls -l ~/.kimi/skills/<name>            # is it a symlink? where to?
+readlink ~/.kimi/skills/<name>          # target path
+```
+
+### Check 4 — `kimi-omk` wrapper
+
+```bash
+test -x ~/.local/bin/kimi-omk \
+  && grep -q "$HOME/.oh-my-kimi/agents/oh-my-kimi.yaml" \
+       ~/.local/bin/kimi-omk \
+  && echo "wrapper OK"
+```
+
+The wrapper is a 2-line bash script. If missing or it points elsewhere,
+the user (or another tool) wrote over it.
+
+Fix: rerun `install.sh`. The wrapper is overwritten safely.
+
+Also confirm `~/.local/bin` is on `PATH`:
+
+```bash
+case ":$PATH:" in *":$HOME/.local/bin:"*) echo "PATH OK" ;;
+  *) echo "add $HOME/.local/bin to PATH" ;;
+esac
+```
+
+### Check 5 — managed hook block + TOML validity
+
+This is the check that catches the install bug fixed in `a62af4b`:
+Kimi ships a default `hooks = []` inline-array line, and appending
+`[[hooks]]` array-of-tables blocks after it produces `Invalid TOML:
+Key "hooks" already exists`.
+
+```bash
+config=~/.kimi/config.toml
+block_count=$(grep -c '^# >>> oh-my-kimi >>>$' "$config" 2>/dev/null || echo 0)
+echo "managed blocks: $block_count (expect 1)"
+python3 - <<PY
+import sys
+try:
+    import tomllib
+except ModuleNotFoundError:
+    import tomli as tomllib
+text = open("$config","rb").read()
+try:
+    parsed = tomllib.loads(text.decode())
+except Exception as e:
+    print("TOML PARSE ERROR:", e); sys.exit(1)
+hooks = parsed.get("hooks")
+print("hooks keytype:", type(hooks).__name__)
+print("hooks count:", len(hooks) if isinstance(hooks, list) else "n/a")
+PY
+```
+
+Expected:
+
+- `managed blocks: 1`
+- `hooks keytype: list`
+- `hooks count: ≥3` (auto-format, protect-env, notify-on-stop ± stop-guard)
+
+Failure modes:
+
+- `managed blocks: 0` — hooks were stripped or never installed. Run
+  `bash ~/.oh-my-kimi/scripts/install.sh`.
+- `managed blocks: 2+` — duplicate injection (rare; happens if someone
+  edited the markers). Run `bash ~/.oh-my-kimi/scripts/uninstall.sh`
+  then reinstall.
+- `TOML PARSE ERROR: Key 'hooks' already exists` — the inline
+  `hooks = []` line from Kimi's default config wasn't stripped. The
+  install.sh from commit `a62af4b` or later fixes this automatically;
+  upgrade the install:
+
+  ```bash
+  cd ~/.oh-my-kimi && git pull
+  bash scripts/install.sh
+  ```
+
+  For a one-off manual fix without reinstall:
+
+  ```bash
+  sed -i.before-fix '/^hooks = \[\]$/d' ~/.kimi/config.toml
+  ```
+
+### Check 6 — hook scripts executable
+
+```bash
+for sh in ~/.oh-my-kimi/hooks/*.sh; do
+  test -x "$sh" || echo "NOT EXECUTABLE: $sh"
+done
+```
+
+If any line prints: the install tar lost the exec bit (rare). Fix:
+
+```bash
+chmod +x ~/.oh-my-kimi/hooks/*.sh
+```
+
+### Check 7 — (optional) MCP servers
+
+Only run if the user installed with `--with-mcp` or expects MCP support.
+
+```bash
+kimi mcp list 2>/dev/null | grep -E 'context7|chrome-devtools|sequential-thinking'
+```
+
+Expected: three lines (one per server) if installed via
+`mcp/add-recommended-all.sh`. Missing servers can be added one at a
+time:
+
+```bash
+bash ~/.oh-my-kimi/mcp/add-context7.sh
+bash ~/.oh-my-kimi/mcp/add-chrome-devtools.sh
+bash ~/.oh-my-kimi/mcp/add-sequential-thinking.sh
+```
+
+## Cross-host visibility (informational)
+
+Kimi CLI's default config (`merge_all_available_skills = true`) reads
+skills from all of these roots:
+
+```
+~/.kimi/skills/        ← canonical (oh-my-kimi installs here)
+~/.claude/skills/      ← also read by Kimi
+~/.codex/skills/       ← also read by Kimi
+~/.config/agents/skills/
+~/.agents/skills/
+```
+
+This means oh-my-kimi installed at `~/.kimi/skills/` is automatically
+visible inside Claude Code and Codex CLI sessions as well, with **no
+extra setup** (provided their respective hosts also use the canonical
+skill layout). If a skill shows up duplicated in `kimi /skill`, check
+whether you have an old copy in `~/.claude/skills/<name>` or
+`~/.codex/skills/<name>` that wasn't installed by oh-my-kimi.
+
+## Reporting
+
+End the run with a concise markdown report:
+
+```
+## oh-my-kimi doctor — <date>
+
+| # | Check                          | Result |
+|---|--------------------------------|--------|
+| 1 | Kimi CLI on PATH               | ✅ kimi 1.37.0 |
+| 2 | Install dir layout             | ✅ |
+| 3 | Skill symlinks (36/36)         | ✅ |
+| 4 | kimi-omk wrapper               | ✅ |
+| 5 | Managed hook block + TOML      | ✅ 1 block, 4 hooks |
+| 6 | Hook scripts +x                | ✅ |
+| 7 | MCP servers                    | ⚠ context7 missing |
+
+Fixes applied: <list>  ← only if --fix was passed
+Suggested next steps: <list>
+```
+
+## Tool usage
+
+- Use `Shell` for every check above; pipe output into the report.
+- Prefer non-mutating diagnostics first; only run fixes after surfacing
+  what you intend to mutate.
+- Never rewrite `~/.kimi/config.toml` directly — always re-run
+  `install.sh`, which preserves the user's own non-managed lines and
+  takes a timestamped backup.
+
+## Final checklist
+
+- [ ] Every check has a ✅ or an explicit ❌ + fix command.
+- [ ] Report explicitly lists any file that was mutated.
+- [ ] If `--fix` was not passed, no files were written.
+- [ ] Backup paths (`*.omk-backup-*`) are mentioned if the user wants to
+      roll back any change.
