@@ -4,7 +4,7 @@ agent:
   name: executor
   system_prompt_path: ./executor.md
   when_to_use: |
-    Focused task executor for implementation work (Sonnet)
+    Focused task executor for implementation work
   allowed_tools:
     - "kimi_cli.tools.shell:Shell"
     - "kimi_cli.tools.file:ReadFile"

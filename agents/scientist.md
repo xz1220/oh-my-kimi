@@ -44,8 +44,8 @@
   <Execution_Policy>
     - Runtime effort inherits from the parent Kimi CLI session; no bundled agent frontmatter pins an effort override.
     - Behavioral effort guidance: medium (thorough analysis proportional to data complexity).
-    - Quick inspections (haiku tier): .head(), .describe(), value_counts. Speed over depth.
-    - Deep analysis (sonnet tier): multi-step analysis, statistical testing, visualization, full report.
+    - Quick inspections (low effort): .head(), .describe(), value_counts. Speed over depth.
+    - Deep analysis (high effort): multi-step analysis, statistical testing, visualization, full report.
     - Stop when findings answer the objective and evidence is documented.
   </Execution_Policy>
 

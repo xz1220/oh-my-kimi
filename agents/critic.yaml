@@ -4,7 +4,7 @@ agent:
   name: critic
   system_prompt_path: ./critic.md
   when_to_use: |
-    Work plan and code review expert — thorough, structured, multi-perspective (Opus)
+    Work plan and code review expert — thorough, structured, multi-perspective
   allowed_tools:
     - "kimi_cli.tools.shell:Shell"
     - "kimi_cli.tools.file:ReadFile"

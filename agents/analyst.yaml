@@ -4,7 +4,7 @@ agent:
   name: analyst
   system_prompt_path: ./analyst.md
   when_to_use: |
-    Pre-planning consultant for requirements analysis (Opus)
+    Pre-planning consultant for requirements analysis
   allowed_tools:
     - "kimi_cli.tools.shell:Shell"
     - "kimi_cli.tools.file:ReadFile"

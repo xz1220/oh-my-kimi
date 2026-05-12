@@ -40,7 +40,9 @@ preserved verbatim. Modifications include but are not limited to:
 
   - YAML wrapper files (agents/*.yaml) targeting the Kimi CLI agent-spec
     schema documented at src/kimi_cli/agentspec.py.
-  - Path rewrites .omc/ → .kimi/ and .omx/ → .kimi/ throughout skills.
+  - Path rewrites .omc/ → .omk/ and .omx/ → .omk/ in agents/ and skills/
+    (per-project working-directory state, see docs/architecture.md). The
+    user-home install layout uses ~/.kimi/ as Kimi CLI requires.
   - Host-name rewrites Claude Code / Codex CLI → Kimi CLI in user-facing
     text.
   - Install scripts (scripts/install.sh, scripts/uninstall.sh) and hook

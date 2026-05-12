@@ -22,16 +22,32 @@ command = tool_input.get("command")
 if tool == "Shell" and isinstance(command, str):
     paths.append(command)
 
-pattern = re.compile(
-    r"(^|/)(\.env(\..*)?|id_rsa|id_ed25519|credentials|credentials\.json|"
-    r"service-account.*\.json|\.aws/credentials|\.config/gcloud)(\b|$)"
+SECRET_RE = re.compile(
+    r"(^|/)(\.env(\.[A-Za-z0-9_-]+)?|id_rsa|id_ed25519|credentials|credentials\.json|"
+    r"service-account[A-Za-z0-9._-]*\.json|\.aws/credentials|\.config/gcloud)(\b|$)"
 )
 
+# Explicit allowlist — these suffixes mean the file is a *template*, not a
+# real secret, and editing them is safe. Suppresses the false positives the
+# loose .env regex would otherwise flag.
+SAFE_SUFFIX_RE = re.compile(
+    r"\.(example|template|tmpl|sample|dist)(\b|$)",
+    re.IGNORECASE,
+)
+
+
+def is_secret(path: str) -> bool:
+    if SAFE_SUFFIX_RE.search(path):
+        return False
+    return bool(SECRET_RE.search(path))
+
+
 for value in paths:
-    if pattern.search(value):
+    if is_secret(value):
         print(
             "oh-my-kimi blocked a possible secret edit. Use an example file or "
-            "confirm the exact non-secret target.",
+            "confirm the exact non-secret target. To bypass, edit "
+            "~/.oh-my-kimi/hooks/protect-env.sh.",
             file=sys.stderr,
         )
         sys.exit(2)

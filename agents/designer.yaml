@@ -4,7 +4,7 @@ agent:
   name: designer
   system_prompt_path: ./designer.md
   when_to_use: |
-    UI/UX Designer-Developer for stunning interfaces (Sonnet)
+    UI/UX Designer-Developer for stunning interfaces
   allowed_tools:
     - "kimi_cli.tools.shell:Shell"
     - "kimi_cli.tools.file:ReadFile"

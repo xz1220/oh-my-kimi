@@ -1,0 +1,8 @@
+# On Stop, remind the agent to include fresh verification evidence when there
+# are uncommitted changes in the working tree. Useful for long-running loops
+# (including Kimi's native Ralph mode via --max-ralph-iterations), but the
+# trigger is the Stop event — not the Ralph mode flag.
+[[hooks]]
+event = "Stop"
+command = "{{OMK_HOME}}/hooks/stop-guard.sh"
+timeout = 5

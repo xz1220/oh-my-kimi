@@ -3,3 +3,7 @@ site/
 __pycache__/
 *.pyc
 .venv/
+
+# Per-project working-state directory used by oh-my-kimi agents
+# (planner saves plans here, scientist saves reports, etc.)
+.omk/

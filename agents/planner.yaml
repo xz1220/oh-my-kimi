@@ -4,13 +4,15 @@ agent:
   name: planner
   system_prompt_path: ./planner.md
   when_to_use: |
-    Strategic planning consultant with interview workflow (Opus)
+    Strategic planning consultant with interview workflow
   allowed_tools:
     - "kimi_cli.tools.shell:Shell"
     - "kimi_cli.tools.file:ReadFile"
     - "kimi_cli.tools.file:ReadMediaFile"
     - "kimi_cli.tools.file:Glob"
     - "kimi_cli.tools.file:Grep"
+    - "kimi_cli.tools.file:WriteFile"
+    - "kimi_cli.tools.file:StrReplaceFile"
     - "kimi_cli.tools.web:SearchWeb"
     - "kimi_cli.tools.web:FetchURL"
   exclude_tools:
@@ -18,6 +20,4 @@ agent:
     - "kimi_cli.tools.ask_user:AskUserQuestion"
     - "kimi_cli.tools.plan:ExitPlanMode"
     - "kimi_cli.tools.plan.enter:EnterPlanMode"
-    - "kimi_cli.tools.file:WriteFile"
-    - "kimi_cli.tools.file:StrReplaceFile"
   subagents: {}

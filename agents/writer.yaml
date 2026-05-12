@@ -4,7 +4,7 @@ agent:
   name: writer
   system_prompt_path: ./writer.md
   when_to_use: |
-    Technical documentation writer for README, API docs, and comments (Haiku)
+    Technical documentation writer for README, API docs, and comments
   allowed_tools:
     - "kimi_cli.tools.shell:Shell"
     - "kimi_cli.tools.file:ReadFile"

@@ -6,7 +6,7 @@ agent:
   subagents:
     analyst:
       path: ./analyst.yaml
-      description: "Pre-planning consultant for requirements analysis (Opus)"
+      description: "Pre-planning consultant for requirements analysis"
     architect:
       path: ./architect.yaml
       description: "Strategic Architecture & Debugging Advisor (Opus, READ-ONLY)"
@@ -18,19 +18,19 @@ agent:
       description: "Simplifies and refines code for clarity, consistency, and maintainability while preserving all functionality. Focuses on recently modified code unless instructed otherwise."
     critic:
       path: ./critic.yaml
-      description: "Work plan and code review expert — thorough, structured, multi-perspective (Opus)"
+      description: "Work plan and code review expert — thorough, structured, multi-perspective"
     debugger:
       path: ./debugger.yaml
       description: "Root-cause analysis, regression isolation, stack trace analysis, build/compilation error resolution"
     designer:
       path: ./designer.yaml
-      description: "UI/UX Designer-Developer for stunning interfaces (Sonnet)"
+      description: "UI/UX Designer-Developer for stunning interfaces"
     document-specialist:
       path: ./document-specialist.yaml
       description: "External Documentation & Reference Specialist"
     executor:
       path: ./executor.yaml
-      description: "Focused task executor for implementation work (Sonnet)"
+      description: "Focused task executor for implementation work"
     explore:
       path: ./explore.yaml
       description: "Codebase search specialist for finding files and code patterns"
@@ -39,7 +39,7 @@ agent:
       description: "Git expert for atomic commits, rebasing, and history management with style detection"
     planner:
       path: ./planner.yaml
-      description: "Strategic planning consultant with interview workflow (Opus)"
+      description: "Strategic planning consultant with interview workflow"
     qa-tester:
       path: ./qa-tester.yaml
       description: "Interactive CLI testing specialist using tmux for session management"
@@ -60,4 +60,4 @@ agent:
       description: "Verification strategy, evidence-based completion checks, test adequacy"
     writer:
       path: ./writer.yaml
-      description: "Technical documentation writer for README, API docs, and comments (Haiku)"
+      description: "Technical documentation writer for README, API docs, and comments"

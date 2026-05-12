@@ -54,10 +54,12 @@ def test_agent_specs_have_existing_prompts_and_valid_tool_policy() -> None:
 
 
 def test_agent_specs_load_with_kimi_cli_when_available() -> None:
-    try:
-        from kimi_cli.agentspec import load_agent_spec
-    except Exception:
-        return
+    # Use importorskip so the skip is visible in pytest output rather than
+    # silently green; CI installs kimi-cli so this should run there.
+    import pytest
+
+    agentspec = pytest.importorskip("kimi_cli.agentspec")
+    load_agent_spec = agentspec.load_agent_spec
 
     spec = load_agent_spec(AGENTS / "oh-my-kimi.yaml")
     assert spec.name == "oh-my-kimi"
@@ -66,4 +68,7 @@ def test_agent_specs_load_with_kimi_cli_when_available() -> None:
     for subagent in spec.subagents.values():
         loaded = load_agent_spec(subagent.path)
         assert loaded.system_prompt_path.exists()
-        assert loaded.allowed_tools
+        # The top-level oh-my-kimi.yaml registers all subagents but doesn't
+        # narrow tools itself, so allowed_tools may be None (inherits default).
+        # Every actual subagent should narrow via allowed_tools, though.
+        assert loaded.allowed_tools, f"{subagent.path} has no allowed_tools"

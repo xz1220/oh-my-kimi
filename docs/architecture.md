@@ -83,83 +83,107 @@ Schema confirmed from `/tmp/kimi-cli/src/kimi_cli/hooks/config.py:24-34`: fields
 
 Use `kimi mcp add <name> <command>` invocations from our install script. No custom config schema needed — Kimi has native MCP CLI.
 
-## Repository layout
+## Repository layout (v0 actual)
 
 ```
 oh-my-kimi/
 ├── README.md                    # marketing + quickstart
 ├── LICENSE                      # Apache-2.0
-├── NOTICE                       # attribution to OMC/OMX (MIT)
+├── NOTICE                       # attribution to OMC/OMX (MIT upstream)
 ├── plugin.json                  # makes this a valid Kimi plugin
+├── SKILL.md                     # plugin-root catalog skill (loaded via `kimi plugin install`)
 │
-├── skills/                      # auto-discovered when plugin installed
-│   ├── deep-interview/
-│   │   └── SKILL.md
-│   ├── autopilot/
-│   ├── code-review/
-│   ├── debug/
-│   ├── plan/
-│   ├── deep-dive/
-│   ├── tdd/
-│   ├── visual-verdict/
-│   ├── verify/
-│   ├── team/
-│   ├── setup/
-│   ├── mcp-setup/
-│   └── help/
+├── skills/                      # 28 skills, symlinked into ~/.kimi/skills/ by install.sh
+│   ├── ai-slop-cleaner/SKILL.md
+│   ├── autopilot/SKILL.md
+│   ├── cancel/SKILL.md
+│   ├── code-review/SKILL.md
+│   ├── debug/SKILL.md
+│   ├── deep-dive/SKILL.md
+│   ├── deepinit/SKILL.md
+│   ├── deep-interview/SKILL.md
+│   ├── help/SKILL.md
+│   ├── mcp-setup/SKILL.md
+│   ├── plan/SKILL.md
+│   ├── ralph/SKILL.md
+│   ├── ralplan/SKILL.md
+│   ├── release/SKILL.md
+│   ├── remember/SKILL.md
+│   ├── security-review/SKILL.md
+│   ├── setup/SKILL.md
+│   ├── skill/SKILL.md
+│   ├── skillify/SKILL.md
+│   ├── tdd/SKILL.md
+│   ├── team/SKILL.md
+│   ├── trace/SKILL.md
+│   ├── ultraqa/SKILL.md
+│   ├── ultrawork/SKILL.md
+│   ├── verify/SKILL.md
+│   ├── visual-verdict/SKILL.md
+│   ├── wiki/SKILL.md
+│   └── writer-memory/SKILL.md
 │
-├── agents/                      # subagents bundle
-│   ├── oh-my-kimi.yaml          # top-level agent that registers all subagents
-│   ├── _base.yaml               # base spec other agents extend
-│   ├── _base.md                 # base system prompt
-│   ├── executor.yaml + .md
-│   ├── critic.yaml + .md
+├── agents/                      # 19 subagents — YAML spec + .md system prompt per agent
+│   ├── oh-my-kimi.yaml + .md    # top-level orchestrator (extends Kimi `default`)
+│   ├── analyst.yaml + .md
 │   ├── architect.yaml + .md
-│   ├── planner.yaml + .md
-│   ├── debugger.yaml + .md
 │   ├── code-reviewer.yaml + .md
+│   ├── code-simplifier.yaml + .md
+│   ├── critic.yaml + .md
+│   ├── debugger.yaml + .md
+│   ├── designer.yaml + .md
+│   ├── document-specialist.yaml + .md
+│   ├── executor.yaml + .md
+│   ├── explore.yaml + .md
+│   ├── git-master.yaml + .md
+│   ├── planner.yaml + .md
+│   ├── qa-tester.yaml + .md
+│   ├── scientist.yaml + .md
 │   ├── security-reviewer.yaml + .md
 │   ├── test-engineer.yaml + .md
-│   ├── document-specialist.yaml + .md
-│   ├── analyst.yaml + .md
-│   └── git-master.yaml + .md
+│   ├── tracer.yaml + .md
+│   ├── verifier.yaml + .md
+│   └── writer.yaml + .md
+│   # All subagent YAMLs use `extend: default` (Kimi's bundled default agent),
+│   # so they inherit the full tool list and narrow via allowed_tools/exclude_tools.
 │
-├── hooks/                       # templates (user copies into ~/.kimi/config.toml)
+├── hooks/                       # 4 templates, appended into ~/.kimi/config.toml by install.sh
 │   ├── README.md
-│   ├── auto-format.toml
-│   ├── protect-env.toml
-│   ├── notify-on-stop.toml
-│   └── ralph-guard.toml
+│   ├── auto-format.toml + .sh
+│   ├── protect-env.toml + .sh
+│   ├── notify-on-stop.toml + .sh
+│   └── ralph-guard.toml + .sh   # uncommitted-changes reminder on Stop event
 │
-├── mcp/                         # recommended MCP server install scripts
+├── mcp/                         # `kimi mcp add` wrappers
 │   ├── add-context7.sh
 │   ├── add-chrome-devtools.sh
 │   ├── add-sequential-thinking.sh
 │   └── add-recommended-all.sh
 │
 ├── scripts/
-│   ├── install.sh               # full install (plugin + hooks + mcp + alias)
-│   ├── uninstall.sh             # clean removal with backup restore
-│   └── lib.sh                   # shared bash helpers (logging, backup)
+│   ├── install.sh               # plugin layout + symlinks + hooks block + kimi-omk wrapper
+│   ├── uninstall.sh             # reverses everything
+│   ├── lib.sh                   # shared bash helpers (logging, backup, managed-block edit)
+│   └── validate.sh              # local validation entry point
 │
-├── tests/
-│   ├── test_yaml_valid.py       # all agent YAMLs parse via kimi_cli.agentspec
-│   ├── test_skills_valid.py     # all SKILL.md frontmatter parses
-│   ├── test_hooks_valid.py      # all hooks.toml chunks parse via kimi_cli.hooks.config
-│   ├── test_install.sh          # smoke test install + verify symlinks
-│   └── test_discovery.py        # kimi_cli.skill.discover_skills() finds our skills
+├── tests/                       # pytest, runs in CI
+│   ├── test_agents.py           # agent yamls parse via kimi_cli.agentspec
+│   ├── test_hooks.py            # hook toml snippets validate against HookDef schema
+│   ├── test_install.py          # install.sh + uninstall.sh end-to-end in tmpdir
+│   └── test_manifest.py         # plugin.json valid + SKILL.md frontmatter + forbidden-token sweep
 │
 ├── docs/
 │   ├── architecture.md          # this file
 │   ├── install.md               # full install guide
 │   ├── skills.md                # catalog with descriptions
+│   ├── agents.md                # subagent bundle reference
+│   ├── hooks.md                 # hook template reference
 │   ├── attribution.md           # detailed list of what came from where
-│   ├── prd.md                   # PRD v2 (already exists)
-│   └── research/                # archived調研 reports
+│   ├── prd.md                   # PRD v2
+│   ├── index.md                 # mkdocs landing page
+│   └── research/                # archived research reports
 │       ├── omc-omx-divergence.md
-│       ├── omx-internals.md
-│       ├── kimi-cli-extension-surface.md
-│       └── adoption-data.md
+│       └── kimi-cli-extension-surface.md
 │
 ├── .github/
 │   └── workflows/
@@ -168,15 +192,32 @@ oh-my-kimi/
 └── mkdocs.yml                   # GitHub Pages config
 ```
 
+## Per-project working state: `.omk/`
+
+Agents that need durable, per-project state — planner writes plans, scientist
+writes reports, debugger writes timelines — use the convention `.omk/<role>/`
+inside the user's working directory (mirror of upstream OMC's `.omc/` /
+OMX's `.omx/`). This is distinct from `~/.kimi/`, which is Kimi CLI's
+**user-home** install layout for skills, hooks, and MCP servers.
+
+- `.omk/plans/<name>.md` — planner output
+- `.omk/plans/open-questions.md` — accumulated open questions across plans
+- `.omk/notepads/<plan-name>/` — executor learnings appended after each task
+- `.omk/scientist/reports/`, `.omk/scientist/figures/` — scientist artifacts
+
+`.omk/` is in `.gitignore` by default. To check plans into VCS, remove that
+line from `.gitignore` in your downstream project.
+
 ## Install paths
 
 Kimi CLI can install a plugin root, but plugin skill discovery treats an
 installed plugin directory as one skill root. That means the repository-level
 `SKILL.md` is visible through native plugin discovery, while the full catalog in
 `skills/*/SKILL.md` must be linked into `~/.kimi/skills` for normal
-`/skill:<name>` usage.
+`/skill:<name>` usage. **Path A alone is not enough** for the full bundle — use
+Path B unless you only want the catalog entry.
 
-### Path A: Native plugin install (catalog entry only)
+### Path A: Native plugin install (catalog entry only — incomplete)
 
 ```bash
 kimi plugin install https://github.com/xz1220/oh-my-kimi
