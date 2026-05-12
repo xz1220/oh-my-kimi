@@ -7,3 +7,6 @@ __pycache__/
 # Per-project working-state directory used by oh-my-kimi agents
 # (planner saves plans here, scientist saves reports, etc.)
 .omk/
+
+# Local clones of upstream oh-my-* repos for gap-analysis (never committed)
+.upstream-refs/

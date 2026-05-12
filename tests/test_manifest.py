@@ -61,6 +61,14 @@ FORBIDDEN_TOKENS = [
     "haiku tier",
     "sonnet tier",
     "subagent_type=\"oh-my-claudecode",
+    # New tokens added when bulk-porting upstream SKILL.md content (2026-05-12)
+    "Claude built-in team",        # Claude Code's TeamCreate/TaskCreate stack — Kimi has Agent tool
+    "Claude teammate",             # same orchestration model — Kimi has subagents
+    "Claude Task agent",            # Claude's Task tool — Kimi has Agent
+    "claude_worker",                # Claude provider routing name
+    "Claude Sonnet executor",       # model-tier-tagged executor
+    "omx ask ",                     # OMX shell wrapper — Kimi calls advisor CLI directly
+    "OMX:TEAM:WORKER",              # AGENTS.md overlay markers — renamed to OMK:TEAM:WORKER
 ]
 
 
