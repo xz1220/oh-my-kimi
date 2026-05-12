@@ -334,25 +334,25 @@ Round {n} complete.
 
 ### Step 2f: 检查软限制
 
-- **Round 3+**：用户说 "enough"、"let's go"、"build it" 时允许提前退出
+- **第 3 轮+**：用户说 "enough"、"let's go"、"build it" 或等价中文时允许提前退出
 - **Round 10**：软警告：「我们到 10 轮了。当前 ambiguity：{score}%。继续，还是按当前清晰度推进？」
-- **Round 20**：硬上限：「Maximum interview rounds reached. Proceeding with current clarity level ({score}%).」
+- **Round 20**：硬上限：「已达到最大访谈轮数。将按当前清晰度（{score}%）继续。」
 
-## Phase 3: Challenge Agents
+## Phase 3：挑战 Agent
 
 在特定轮次阈值切换提问视角：
 
-### Round 4+: Contrarian Mode
+### Round 4+：反方模式
 注入到问题生成 prompt：
-> You are now in CONTRARIAN mode. Your next question should challenge the user's core assumption. Ask "What if the opposite were true?" or "What if this constraint doesn't actually exist?" The goal is to test whether the user's framing is correct or just habitual.
+> 你现在处于 CONTRARIAN 模式。你的下一个问题应该挑战用户的核心假设。问「如果反过来才是真的呢？」或「如果这个约束其实不存在呢？」目标是测试用户的框架到底正确，还是只是习惯性前提。
 
-### Round 6+: Simplifier Mode
+### Round 6+：简化模式
 注入到问题生成 prompt：
-> You are now in SIMPLIFIER mode. Your next question should probe whether complexity can be removed. Ask "What's the simplest version that would still be valuable?" or "Which of these constraints are actually necessary vs. assumed?" The goal is to find the minimal viable specification.
+> 你现在处于 SIMPLIFIER 模式。你的下一个问题应该探查能否移除复杂度。问「仍然有价值的最简单版本是什么？」或「这些约束里哪些是真的必要，哪些只是被假设出来的？」目标是找到最小可行规格。
 
 ### Round 8+: Ontologist Mode（若 ambiguity 仍 > 0.3）
 注入到问题生成 prompt：
-> You are now in ONTOLOGIST mode. The ambiguity is still high after 8 rounds, suggesting we may be addressing symptoms rather than the core problem. The tracked entities so far are: {current_entities_summary from latest ontology snapshot}. Ask "What IS this, really?" or "Looking at these entities, which one is the CORE concept and which are just supporting?" The goal is to find the essence by examining the ontology.
+> 你现在处于 ONTOLOGIST 模式。8 轮之后 ambiguity 仍然偏高，说明我们可能在处理症状，而不是核心问题。到目前为止跟踪到的实体是：{current_entities_summary from latest ontology snapshot}。问「这件事本质上到底是什么？」或「看这些实体，哪个才是核心概念，哪些只是支撑概念？」目标是通过检查 ontology 找到本质。
 
 每种 challenge 模式各使用一次，然后回到正常苏格拉底式提问。state 里跟踪哪些模式已用过。
 
@@ -370,87 +370,87 @@ Round {n} complete.
 规格结构：
 
 ```markdown
-# Deep Interview Spec: {title}
+# Deep Interview 规格：{title}
 
-## Metadata
-- Interview ID: {uuid}
-- Rounds: {count}
-- Final Ambiguity Score: {score}%
-- Type: greenfield | brownfield
-- Generated: {timestamp}
-- Threshold: {threshold}
-- Initial Context Summarized: {yes|no}
-- Status: {PASSED | BELOW_THRESHOLD_EARLY_EXIT}
+## 元数据
+- 访谈 ID：{uuid}
+- 轮数：{count}
+- 最终 ambiguity 分数：{score}%
+- 类型：greenfield | brownfield
+- 生成时间：{timestamp}
+- 阈值：{threshold}
+- 初始上下文是否已总结：{yes|no}
+- 状态：{PASSED | BELOW_THRESHOLD_EARLY_EXIT}
 
-## Clarity Breakdown
-| Dimension | Score | Weight | Weighted |
-|-----------|-------|--------|----------|
-| Goal Clarity | {s} | {w} | {s*w} |
-| Constraint Clarity | {s} | {w} | {s*w} |
-| Success Criteria | {s} | {w} | {s*w} |
-| Context Clarity | {s} | {w} | {s*w} |
-| **Total Clarity** | | | **{total}** |
+## 清晰度拆解
+| 维度 | 分数 | 权重 | 加权分 |
+|------|------|------|--------|
+| 目标清晰度 | {s} | {w} | {s*w} |
+| 约束清晰度 | {s} | {w} | {s*w} |
+| 成功标准 | {s} | {w} | {s*w} |
+| 上下文清晰度 | {s} | {w} | {s*w} |
+| **总清晰度** | | | **{total}** |
 | **Ambiguity** | | | **{1-total}** |
 
-## Topology
-{List every Round 0 confirmed top-level component. Active components must have coverage notes; deferred components must include the user-confirmed deferral reason and timestamp.}
+## 拓扑
+{列出每个 Round 0 已确认的顶层组件。active 组件必须有覆盖说明；deferred 组件必须包含用户确认的延后理由与时间戳。}
 
-| Component | Status | Description | Coverage / Deferral Note |
-|-----------|--------|-------------|--------------------------|
+| 组件 | 状态 | 描述 | 覆盖 / 延后说明 |
+|------|------|------|-----------------|
 | {component.name} | {active|deferred} | {component.description} | {covered acceptance criteria or deferral reason} |
 
-## Goal
-{crystal-clear goal statement derived from interview, covering every active topology component}
+## 目标
+{从访谈得出的清晰目标陈述，覆盖每个 active 拓扑组件}
 
-## Constraints
+## 约束
 - {constraint 1}
 - {constraint 2}
 - ...
 
-## Non-Goals
+## 非目标
 - {explicitly excluded scope 1}
 - {explicitly excluded scope 2}
 
-## Acceptance Criteria
+## 验收标准
 - [ ] {testable criterion 1}
 - [ ] {testable criterion 2}
 - [ ] {testable criterion 3}
 - ...
 
-## Assumptions Exposed & Resolved
-| Assumption | Challenge | Resolution |
-|------------|-----------|------------|
+## 已暴露并解决的假设
+| 假设 | 挑战方式 | 决议 |
+|------|----------|------|
 | {assumption} | {how it was questioned} | {what was decided} |
 
-## Technical Context
+## 技术上下文
 {brownfield: relevant codebase findings from explore agent}
 {greenfield: technology choices and constraints}
 
-## Ontology (Key Entities)
-{Fill from the FINAL round's ontology extraction, not just crystallization-time generation}
+## Ontology（关键实体）
+{使用最终轮的 ontology 抽取结果填充，而不只是结晶规格时重新生成}
 
-| Entity | Type | Fields | Relationships |
-|--------|------|--------|---------------|
+| 实体 | 类型 | 字段 | 关系 |
+|------|------|------|------|
 | {entity.name} | {entity.type} | {entity.fields} | {entity.relationships} |
 
-## Ontology Convergence
-{Show how entities stabilized across interview rounds using data from ontology_snapshots in state}
+## Ontology 收敛
+{使用 state 中 ontology_snapshots 的数据展示实体如何在访谈轮次中稳定下来}
 
-| Round | Entity Count | New | Changed | Stable | Stability Ratio |
-|-------|-------------|-----|---------|--------|----------------|
+| 轮次 | 实体数 | 新增 | 变化 | 稳定 | 稳定比例 |
+|------|--------|------|------|------|----------|
 | 1 | {n} | {n} | - | - | - |
 | 2 | {n} | {new} | {changed} | {stable} | {ratio}% |
 | ... | ... | ... | ... | ... | ... |
 | {final} | {n} | {new} | {changed} | {stable} | {ratio}% |
 
-## Interview Transcript
+## 访谈记录
 <details>
-<summary>Full Q&A ({n} rounds)</summary>
+<summary>完整问答（{n} 轮）</summary>
 
-### Round 1
-**Q:** {question}
-**A:** {answer}
-**Ambiguity:** {score}% (Goal: {g}, Constraints: {c}, Criteria: {cr})
+### 第 1 轮
+**问：** {question}
+**答：** {answer}
+**Ambiguity：** {score}%（目标：{g}，约束：{c}，标准：{cr}）
 
 ...
 </details>
@@ -462,56 +462,56 @@ Round {n} complete.
 
 规格写入后，把它标为 `pending approval`，并通过 `AskUserQuestion` 给出执行选项。在用户选择执行选项之前，deep-interview 模块**不得**跑变更性 shell 命令、编辑源文件、commit、push、开 PR、调用执行 skill 或委派实现任务：
 
-**Question:** "Your spec is ready (ambiguity: {score}%). How would you like to proceed?"
+**问题：** "规格已准备好（ambiguity：{score}%）。你想如何继续？"
 
-**Options:**
+**选项：**
 
-1. **Refine with omc-plan consensus (Recommended)**
-   - Description: "Consensus-refine this spec with Planner/Architect/Critic, then stop for explicit execution approval. Maximum quality."
-   - Action: 仅当用户选择该选项后，用 `--consensus --direct` 标志与规格文件路径作为上下文调用 `Skill("oh-my-kimi:plan")`。`--direct` 跳过 omc-plan skill 的访谈阶段（deep interview 已收集需求），`--consensus` 触发 Planner/Architect/Critic 循环。共识完成后在 `.omk/plans/` 产出方案，**就此停下**并把方案标为 `pending approval`；不要自动调用 autopilot 或任何其他执行 skill。
-   - Pipeline: `deep-interview spec → explicit approval to refine → omc-plan --consensus --direct → pending approval → separate execution approval`
+1. **用 omc-plan 共识模式精炼（推荐）**
+   - 说明："用 Planner / Architect / Critic 共识精炼这份规格，然后停下来等待明确执行批准。质量最高。"
+   - 操作：仅当用户选择该选项后，用 `--consensus --direct` 标志与规格文件路径作为上下文调用 `Skill("oh-my-kimi:plan")`。`--direct` 跳过 omc-plan skill 的访谈阶段（deep interview 已收集需求），`--consensus` 触发 Planner/Architect/Critic 循环。共识完成后在 `.omk/plans/` 产出方案，**就此停下**并把方案标为 `pending approval`；不要自动调用 autopilot 或任何其他执行 skill。
+   - 流程：`deep-interview spec → 明确批准精炼 → omc-plan --consensus --direct → pending approval → 单独执行批准`
 
-2. **Execute with autopilot**
-   - Description: "Full autonomous pipeline — planning, parallel implementation, QA, validation. Faster but without consensus refinement."
-   - Action: 仅在用户显式选择该执行选项后，把规格文件路径作为上下文调用 `Skill("oh-my-kimi:autopilot")`。规格替代 autopilot 的 Phase 0 —— autopilot 从 Phase 1（Planning）开始。
+2. **用 autopilot 执行**
+   - 说明："完整自治流程：规划、并行实现、QA、验证。更快，但没有共识精炼。"
+   - 操作：仅在用户显式选择该执行选项后，把规格文件路径作为上下文调用 `Skill("oh-my-kimi:autopilot")`。规格替代 autopilot 的 Phase 0 —— autopilot 从 Phase 1（Planning）开始。
 
-3. **Execute with ralph**
-   - Description: "Persistence loop with architect verification — keeps working until all acceptance criteria pass"
-   - Action: 把规格文件路径作为任务定义调用 `Skill("oh-my-kimi:ralph")`。
+3. **用 ralph 执行**
+   - 说明："带 architect 验证的持续执行循环，会一直推进到所有验收标准通过"
+   - 操作：把规格文件路径作为任务定义调用 `Skill("oh-my-kimi:ralph")`。
 
-4. **Execute with team**
-   - Description: "N coordinated parallel agents — fastest execution for large specs"
-   - Action: 把规格文件路径作为共享方案调用 `Skill("oh-my-kimi:team")`。
+4. **用 team 执行**
+   - 说明："N 个协同并行 agent，适合大规格的最快执行路径"
+   - 操作：把规格文件路径作为共享方案调用 `Skill("oh-my-kimi:team")`。
 
-5. **Refine further**
-   - Description: "Continue interviewing to improve clarity (current: {score}%)"
-   - Action: 回到 Phase 2 访谈循环。
+5. **继续精炼**
+   - 说明："继续访谈以提升清晰度（当前：{score}%）"
+   - 操作：回到 Phase 2 访谈循环。
 
-**IMPORTANT:** 选定执行后**必须**通过 `Skill()` 调用所选 skill。**不要**直接实现。deep-interview agent 是需求 agent，不是执行 agent。若曾对超大初始上下文做了总结，向下游传规格 + prompt-safe 总结，而不是原始超大源材料。在没有显式执行选择之前，停下来让规格保持 `pending approval`。
+**重要：** 选定执行后**必须**通过 `Skill()` 调用所选 skill。**不要**直接实现。deep-interview agent 是需求 agent，不是执行 agent。若曾对超大初始上下文做了总结，向下游传规格 + prompt-safe 总结，而不是原始超大源材料。在没有显式执行选择之前，停下来让规格保持 `pending approval`。
 
-### Approval-Gated Refinement Path（推荐）
+### 带批准门禁的精炼路径（推荐）
 
 ```
-Stage 1: Deep Interview          Stage 2: omc-plan consensus       Stage 3: Separate approval
+阶段 1：Deep Interview          阶段 2：omc-plan 共识             阶段 3：单独批准
 ┌─────────────────────┐    ┌───────────────────────────┐    ┌──────────────────────┐
-│ Socratic Q&A        │    │ Planner creates plan      │    │ User chooses if/how  │
-│ Ambiguity scoring   │───>│ Architect reviews         │───>│ execution proceeds   │
-│ Challenge agents    │    │ Critic validates          │    │ via team/ralph/etc.  │
-│ Spec crystallization│    │ Loop until consensus      │    │ no auto-handoff      │
+│ 苏格拉底式问答       │    │ Planner 创建方案          │    │ 用户选择是否执行      │
+│ Ambiguity 评分       │───>│ Architect 评审            │───>│ 以及如何执行          │
+│ 挑战 agent           │    │ Critic 校验               │    │ 通过 team/ralph 等   │
+│ 规格结晶             │    │ 循环直到共识              │    │ 不自动交接           │
 │ Gate: ≤<resolvedThresholdPercent> ambiguity│    │ ADR + RALPLAN-DR summary  │    │                      │
 └─────────────────────┘    └───────────────────────────┘    └──────────────────────┘
-Output: spec.md            Output: consensus-plan.md        Output: pending approval
+输出：spec.md             输出：consensus-plan.md          输出：pending approval
 ```
 
 **为什么是 3 个阶段？** 每个阶段提供一道不同质量闸门：
 1. **Deep Interview** 卡的是「清晰度」—— 用户知道自己要什么吗？
 2. **omc-plan consensus** 卡的是「可行性」—— 方案在架构上靠谱吗？
-3. **Separate approval** 卡的是「同意」—— 用户是否显式选了执行路径？
+3. **单独批准** 卡的是「同意」—— 用户是否显式选了执行路径？
 
 可以跳过任一阶段，但会削弱质量保证：
-- 跳过 Stage 1 → autopilot 可能造错东西（需求模糊）
-- 跳过 Stage 2 → autopilot 可能规划不善（缺 Architect/Critic 挑战）
-- 跳过 Stage 3 → 不执行（仅得到精炼方案），这是按设计
+- 跳过阶段 1 → autopilot 可能造错东西（需求模糊）
+- 跳过阶段 2 → autopilot 可能规划不善（缺 Architect/Critic 挑战）
+- 跳过阶段 3 → 不执行（仅得到精炼方案），这是按设计
 
 </Steps>
 
@@ -531,11 +531,10 @@ Output: spec.md            Output: consensus-plan.md        Output: pending appr
 <Good>
 锁定最弱维度：
 ```
-Scores: Goal=0.9, Constraints=0.4, Criteria=0.7
-Next question targets Constraints (lowest at 0.4):
-"You mentioned this should 'work on mobile'. Does that mean a native app,
-a responsive web app, or a PWA? And are there specific devices or OS versions
-you need to support?"
+分数：目标=0.9，约束=0.4，标准=0.7
+下一个问题针对约束（最低，0.4）：
+"你提到它应该'能在移动端使用'。这是指原生 app、
+响应式 Web 应用，还是 PWA？有没有必须支持的特定设备或系统版本？"
 ```
 为什么好：识别出最弱维度，解释了为什么它现在是瓶颈，问出一个具体改进它的问题，且不把多个话题塞进同一问。
 </Good>
@@ -543,12 +542,11 @@ you need to support?"
 <Good>
 先收集代码库事实再问：
 ```
-[spawns explore agent: "find authentication implementation"]
-[receives: "Auth is in src/auth/ using JWT with passport.js"]
+[派出 explore agent："查找认证实现"]
+[收到："认证在 src/auth/ 中，使用 JWT 和 passport.js"]
 
-Question: "I found JWT authentication with passport.js in `src/auth/` (pattern match from explore).
-For this new feature, should we extend the existing auth middleware or create
-a separate authentication flow?"
+问题："我在 `src/auth/` 中找到了使用 passport.js 的 JWT 认证实现（来自 explore 的模式匹配）。
+对这个新功能，我们应该扩展现有认证中间件，还是创建一套单独的认证流程？"
 ```
 为什么好：先做了 explore，引用了触发问题的 repo 证据，然后问一个有信息含量的确认性问题。绝不让用户回答代码已经告诉你的事。
 </Good>
@@ -556,11 +554,11 @@ a separate authentication flow?"
 <Good>
 激活 Contrarian 模式：
 ```
-Round 5 | Contrarian Mode | Ambiguity: 42%
+第 5 轮 | 反方模式 | Ambiguity：42%
 
-You've said this needs to support 10,000 concurrent users. What if it only
-needed to handle 100? Would the architecture change fundamentally, or is
-the 10K number an assumption rather than a measured requirement?
+你说它需要支持 10,000 个并发用户。如果它其实只需要处理 100 个呢？
+架构会发生根本变化吗？10K 这个数字是测量出来的需求，
+还是一个尚未验证的假设？
 ```
 为什么好：挑战了一个可能大幅简化方案的具体假设（scale 需求）。
 </Good>
@@ -568,13 +566,13 @@ the 10K number an assumption rather than a measured requirement?
 <Good>
 带警告的早退出：
 ```
-User: "That's enough, just build it"
-System: "Current ambiguity is 35% (threshold: <resolvedThresholdPercent>). Areas still unclear:
-  - Success Criteria: 0.5 (How do we verify the search ranking algorithm works correctly?)
-  - Constraints: 0.6 (No performance targets defined yet)
+User: "差不多了，直接做吧"
+System: "当前 ambiguity 是 35%（阈值：<resolvedThresholdPercent>）。仍不清楚的区域：
+  - 成功标准：0.5（如何验证搜索排序算法工作正确？）
+  - 约束：0.6（尚未定义性能目标）
 
-Proceeding may require rework. Continue anyway?"
-  [Yes, proceed] [Ask 2-3 more questions] [Cancel]
+继续推进可能导致返工。仍然继续吗？"
+  [继续] [再问 2-3 个问题] [取消]
 ```
 为什么好：尊重用户停下的意愿，但透明展示风险。
 </Good>
@@ -582,12 +580,12 @@ Proceeding may require rework. Continue anyway?"
 <Good>
 Ontology 收敛跟踪：
 ```
-Round 3 entities: User, Task, Project (stability: N/A → 67%)
-Round 4 entities: User, Task, Project, Tag (stability: 75% — 3 stable, 1 new)
-Round 5 entities: User, Task, Project, Tag (stability: 100% — all 4 stable)
+第 3 轮实体：User、Task、Project（稳定度：N/A → 67%）
+第 4 轮实体：User、Task、Project、Tag（稳定度：75% —— 3 个稳定，1 个新增）
+第 5 轮实体：User、Task、Project、Tag（稳定度：100% —— 4 个全部稳定）
 
-"Ontology has converged — the same 4 entities appeared in 2 consecutive rounds
-with no changes. The domain model is stable."
+"Ontology 已收敛 —— 同样 4 个实体连续 2 轮出现且没有变化。
+领域模型已经稳定。"
 ```
 为什么好：展示了跨轮的实体跟踪与可见收敛。稳定度比随领域模型固化而提升，给出访谈正在收敛到稳定理解的数学证据。
 </Good>
@@ -595,9 +593,9 @@ with no changes. The domain model is stable."
 <Good>
 对范围模糊任务采用 ontology 风格提问：
 ```
-Round 6 | Targeting: Goal Clarity | Why now: the core entity is still unstable across rounds, so feature questions would compound ambiguity | Ambiguity: 38%
+第 6 轮 | 目标：目标清晰度 | 为什么现在问：核心实体跨轮仍不稳定，所以功能问题会叠加 ambiguity | Ambiguity：38%
 
-"Across the last rounds you've described this as a workflow, an inbox, and a planner. Which one is the core thing this product IS, and which ones are supporting metaphors or views?"
+"过去几轮里，你把它描述成 workflow、inbox 和 planner。这个产品本质上是哪一个？哪些只是支撑性的隐喻或视图？"
 ```
 为什么好：当范围模糊而不仅仅是不完整时，先用 ontology 风格稳定核心名词，再钻入功能，这是正确的步骤。
 </Good>
@@ -605,8 +603,8 @@ Round 6 | Targeting: Goal Clarity | Why now: the core entity is still unstable a
 <Bad>
 batch 多个问题：
 ```
-"What's the target audience? And what tech stack? And how should auth work?
-Also, what's the deployment target?"
+"目标用户是谁？技术栈是什么？认证要怎么做？
+还有，部署目标是什么？"
 ```
 为什么差：一次四个问题 —— 导致浅层答复并让评分失真。
 </Bad>

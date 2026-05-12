@@ -146,14 +146,14 @@ Lead 应当：
 
 建议的 worker 返回结构：
 
-1. **Lane**
-2. **Hypothesis**
-3. **Evidence For**
-4. **Evidence Against / Gaps**
-5. **Evidence Strength**
-6. **Critical Unknown**
-7. **Best Discriminating Probe**
-8. **Confidence**
+1. **通道**
+2. **假设**
+3. **支持证据**
+4. **反对证据 / 缺口**
+5. **证据强度**
+6. **关键未知**
+7. **最佳甄别探针**
+8. **置信度**
 
 ## Leader 综合契约
 
@@ -161,16 +161,16 @@ Lead 应当：
 
 返回：
 
-1. **Observed Result**
-2. **Ranked Hypotheses**
-3. **Evidence Summary by Hypothesis**
-4. **Evidence Against / Missing Evidence**
-5. **Rebuttal Round**
-6. **Convergence / Separation Notes**
-7. **Most Likely Explanation**
-8. **Critical Unknown**
-9. **Recommended Discriminating Probe**
-10. **Additional Trace Lanes**（可选，仅当不确定性仍然很高时）
+1. **观察结果**
+2. **排序假设**
+3. **按假设汇总证据**
+4. **反证 / 缺失证据**
+5. **反驳回合**
+6. **汇聚 / 分离说明**
+7. **最可能解释**
+8. **关键未知**
+9. **推荐甄别探针**
+10. **附加 trace 通道**（可选，仅当不确定性仍然很高时）
 
 即使当前已经有一个主导解释，仍保留一份排序的候选清单。
 
@@ -227,39 +227,39 @@ Lead 应当显式说明为什么一个假设下移：
 
 ## 最终综合形态示例
 
-### Observed Result
+### 观察结果
 [发生了什么]
 
-### Ranked Hypotheses
-| Rank | Hypothesis | Confidence | Evidence Strength | Why it leads |
-|------|------------|------------|-------------------|--------------|
-| 1 | ... | High / Medium / Low | Strong / Moderate / Weak | ... |
+### 排序假设
+| 排名 | 假设 | 置信度 | 证据强度 | 为什么领先 |
+|------|------|--------|----------|------------|
+| 1 | ... | 高 / 中 / 低 | 强 / 中 / 弱 | ... |
 
-### Evidence Summary by Hypothesis
-- Hypothesis 1: ...
-- Hypothesis 2: ...
-- Hypothesis 3: ...
+### 按假设汇总证据
+- 假设 1：...
+- 假设 2：...
+- 假设 3：...
 
-### Evidence Against / Missing Evidence
-- Hypothesis 1: ...
-- Hypothesis 2: ...
-- Hypothesis 3: ...
+### 反证 / 缺失证据
+- 假设 1：...
+- 假设 2：...
+- 假设 3：...
 
-### Rebuttal Round
-- Best rebuttal to leader: ...
-- Why leader held / failed: ...
+### 反驳回合
+- 对领先假设的最佳反驳：...
+- 领先假设为何站住 / 失败：...
 
-### Convergence / Separation Notes
+### 汇聚 / 分离说明
 - ...
 
-### Most Likely Explanation
+### 最可能解释
 [当前最佳解释]
 
-### Critical Unknown
+### 关键未知
 [让不确定性悬而未决的单一缺失事实]
 
-### Recommended Discriminating Probe
+### 推荐甄别探针
 [单一下一步探针]
 
-### Additional Trace Lanes
+### 附加 Trace 通道
 [仅当不确定性仍然很高时]

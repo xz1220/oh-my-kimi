@@ -72,7 +72,7 @@ description: 取消任何活跃的 oh-my-kimi 模式（autopilot、ralph、ultra
 2. 同作用域内 linked 的 Ultrawork/Ecomode 也处于终态 / 非活跃。
 4. 无关 session 不受影响。
 
-## Force Clear All
+## 强制清理全部
 
 需要擦除所有 session 加遗留工件（例如整工作区重置）时用 `--force` 或 `--all`。
 

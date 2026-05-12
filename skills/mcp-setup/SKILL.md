@@ -4,7 +4,7 @@ description: 配置常用 MCP 服务器以增强 agent 能力
 level: 2
 ---
 
-# MCP Setup
+# MCP 配置
 
 通过 `claude mcp add` 命令行接口，配置 Model Context Protocol（MCP）服务器，扩展 Kimi CLI 的能力，引入网页搜索、文件系统访问、GitHub 集成等外部工具。
 
@@ -12,57 +12,57 @@ level: 2
 
 MCP 服务器为 Kimi CLI agent 提供额外工具。本 skill 帮你用 `claude mcp add` 配置常用 MCP 服务器。
 
-## Step 1：选择安装路径
+## 步骤 1：选择安装路径
 
 用 **AskUserQuestion**，**每次只问一个问题**，**每问不超过 3 个选项**。新版 Kimi CLI 会因更大的选项 payload 报无效工具参数，所以把 MCP 选择流分步走。
 
-### Step 1.1：第一层菜单
+### 步骤 1.1：第一层菜单
 
-**Question:** "What kind of MCP setup would you like?"
+**问题：** "你想配置哪种 MCP？"
 
-**Options:**
-1. **Recommended starter setup** - Fast path for the most common oh-my-kimi MCP additions
-2. **Individual popular server** - Pick one built-in server from a short follow-up menu
-3. **Custom server** - Add your own stdio or HTTP MCP server
+**选项：**
+1. **推荐入门配置** - 快速添加 oh-my-kimi 最常用的 MCP
+2. **单个常用服务器** - 从简短的追问菜单里选择一个内置服务器
+3. **自定义服务器** - 添加你自己的 stdio 或 HTTP MCP 服务器
 
-### Step 1.2：用户选 "Recommended starter setup"
+### 步骤 1.2：用户选「推荐入门配置」
 
 追问一个 **AskUserQuestion**：
 
-**Question:** "Which recommended MCP bundle should I configure?"
+**问题：** "要配置哪套推荐 MCP 组合？"
 
-**Options:**
-1. **Context7 only (Recommended)** - Zero-config docs/context server
-2. **Context7 + Exa** - Docs/context plus enhanced web search
-3. **Full recommended bundle** - Context7, Exa, Filesystem, and GitHub
+**选项：**
+1. **仅 Context7（推荐）** - 零配置文档 / 上下文服务器
+2. **Context7 + Exa** - 文档 / 上下文加增强网页搜索
+3. **完整推荐组合** - Context7、Exa、Filesystem 和 GitHub
 
 把选择映射到要配置的服务器清单。
 
-### Step 1.3：用户选 "Individual popular server"
+### 步骤 1.3：用户选「单个常用服务器」
 
 追问一个 **AskUserQuestion**：
 
-**Question:** "Which server should I configure first?"
+**问题：** "先配置哪个服务器？"
 
-**Options:**
-1. **Context7 (Recommended)** - Documentation and code context from popular libraries
-2. **Exa Web Search** - Enhanced web search (replaces built-in websearch)
-3. **More server choices** - Filesystem, GitHub, or the full recommended bundle
+**选项：**
+1. **Context7（推荐）** - 常用库的文档和代码上下文
+2. **Exa Web Search** - 增强网页搜索（替代内置 websearch）
+3. **更多服务器选项** - Filesystem、GitHub 或完整推荐组合
 
-若用户选 **More server choices**，再问一个 **AskUserQuestion**：
+若用户选 **更多服务器选项**，再问一个 **AskUserQuestion**：
 
-**Question:** "Which additional MCP option do you want?"
+**问题：** "你还想添加哪个 MCP 选项？"
 
-**Options:**
-1. **Filesystem (Recommended)** - Extended file system access with additional capabilities
-2. **GitHub** - GitHub API integration for issues, PRs, and repository management
-3. **Full recommended bundle** - Configure Context7, Exa, Filesystem, and GitHub together
+**选项：**
+1. **Filesystem（推荐）** - 提供额外能力的扩展文件系统访问
+2. **GitHub** - 集成 GitHub API，用于 issue、PR 与仓库管理
+3. **完整推荐组合** - 一次性配置 Context7、Exa、Filesystem 和 GitHub
 
-### Step 1.4：用户选 "Custom server"
+### 步骤 1.4：用户选「自定义服务器」
 
-直接跳到下面的 **Custom MCP Server** 段。
+直接跳到下面的 **自定义 MCP 服务器** 段。
 
-## Step 2：收集必要信息
+## 步骤 2：收集必要信息
 
 ### Context7：
 不需要 API key，立即可用。
@@ -70,29 +70,29 @@ MCP 服务器为 Kimi CLI agent 提供额外工具。本 skill 帮你用 `claude
 ### Exa Web Search：
 索取 API key：
 ```
-Do you have an Exa API key?
-- Get one at: https://exa.ai
-- Enter your API key, or type 'skip' to configure later
+你有 Exa API key 吗？
+- 可以在这里获取：https://exa.ai
+- 输入你的 API key，或输入 'skip' 稍后再配置
 ```
 
 ### Filesystem：
 询问允许访问的目录：
 ```
-Which directories should the filesystem MCP have access to?
-Default: Current working directory
-Enter comma-separated paths, or press Enter for default
+Filesystem MCP 可以访问哪些目录？
+默认：当前工作目录
+输入用英文逗号分隔的路径，或直接回车使用默认值
 ```
 
 ### GitHub：
 索取 token：
 ```
-Do you have a GitHub Personal Access Token?
-- Create one at: https://github.com/settings/tokens
-- Recommended scopes: repo, read:org
-- Enter your token, or type 'skip' to configure later
+你有 GitHub Personal Access Token 吗？
+- 可以在这里创建：https://github.com/settings/tokens
+- 推荐 scope：repo、read:org
+- 输入你的 token，或输入 'skip' 稍后再配置
 ```
 
-## Step 3：通过 CLI 添加 MCP 服务器
+## 步骤 3：通过 CLI 添加 MCP 服务器
 
 用 `claude mcp add` 命令配置每个 MCP 服务器。CLI 会自动处理 settings.json 的更新与合并。
 
@@ -113,63 +113,63 @@ claude mcp add filesystem -- npx -y @modelcontextprotocol/server-filesystem <all
 
 ### GitHub 配置：
 
-**Option 1：Docker（本地）**
+**方案 1：Docker（本地）**
 ```bash
 claude mcp add -e GITHUB_PERSONAL_ACCESS_TOKEN=<user-provided-token> github -- docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN ghcr.io/github/github-mcp-server
 ```
 
-**Option 2：HTTP（远程）**
+**方案 2：HTTP（远程）**
 ```bash
 claude mcp add --transport http github https://api.githubcopilot.com/mcp/
 ```
 
 > 注：Docker 选项需要装 Docker。HTTP 选项更简单，但能力可能有差异。
 
-## Step 4：验证安装
+## 步骤 4：验证安装
 
 配置完成后验证 MCP 服务器是否就绪：
 
 ```bash
-# List configured MCP servers
+# 列出已配置的 MCP 服务器
 claude mcp list
 ```
 
 这会展示所有已配置的 MCP 服务器及其状态。
 
-## Step 5：展示完成消息
+## 步骤 5：展示完成消息
 
 ```
-MCP Server Configuration Complete!
+MCP 服务器配置完成！
 
-CONFIGURED SERVERS:
-[List the servers that were configured]
+已配置服务器：
+[列出本次配置的服务器]
 
-NEXT STEPS:
-1. Restart Kimi CLI for changes to take effect
-2. The configured MCP tools will be available to all agents
-3. Run `claude mcp list` to verify configuration
+下一步：
+1. 重启 Kimi CLI，让配置生效
+2. 已配置的 MCP 工具会对所有 agent 可用
+3. 运行 `claude mcp list` 验证配置
 
-USAGE TIPS:
-- Context7: Ask about library documentation (e.g., "How do I use React hooks?")
-- Exa: Use for web searches (e.g., "Search the web for latest TypeScript features")
-- Filesystem: Extended file operations beyond the working directory
-- GitHub: Interact with GitHub repos, issues, and PRs
+使用提示：
+- Context7：询问库文档（例如："React hooks 怎么用？"）
+- Exa：用于网页搜索（例如："搜索最新 TypeScript 特性"）
+- Filesystem：执行工作目录之外的扩展文件操作
+- GitHub：操作 GitHub 仓库、issue 和 PR
 
-TROUBLESHOOTING:
-- If MCP servers don't appear, run `claude mcp list` to check status
-- Ensure you have Node.js 18+ installed for npx-based servers
-- For GitHub Docker option, ensure Docker is installed and running
-- Run /oh-my-kimi:omc-doctor to diagnose issues
+故障排查：
+- 如果 MCP 服务器没有出现，运行 `claude mcp list` 检查状态
+- 对基于 npx 的服务器，确保已安装 Node.js 18+
+- 如果使用 GitHub Docker 方案，确保 Docker 已安装并正在运行
+- 运行 /oh-my-kimi:omc-doctor 诊断问题
 
-MANAGING MCP SERVERS:
-- Add more servers: /oh-my-kimi:mcp-setup or `claude mcp add ...`
-- List servers: `claude mcp list`
-- Remove a server: `claude mcp remove <server-name>`
+管理 MCP 服务器：
+- 添加更多服务器：/oh-my-kimi:mcp-setup 或 `claude mcp add ...`
+- 列出服务器：`claude mcp list`
+- 删除服务器：`claude mcp remove <server-name>`
 ```
 
 ## 自定义 MCP 服务器
 
-当用户选 "Custom" 时：
+当用户选「自定义服务器」时：
 
 询问：
 1. 服务器名（标识符）
@@ -177,25 +177,25 @@ MANAGING MCP SERVERS:
 3. stdio：命令与参数（例如 `npx my-mcp-server`）
 4. http：URL（例如 `https://example.com/mcp`）
 5. 环境变量（可选，键值对）
-6. HTTP headers（可选，仅 http 传输）
+6. HTTP header（可选，仅 http 传输）
 
 然后构造并跑对应的 `claude mcp add` 命令：
 
 **stdio 服务器：**
 ```bash
-# Without environment variables
+# 不带环境变量
 claude mcp add <server-name> -- <command> [args...]
 
-# With environment variables
+# 带环境变量
 claude mcp add -e KEY1=value1 -e KEY2=value2 <server-name> -- <command> [args...]
 ```
 
 **HTTP 服务器：**
 ```bash
-# Basic HTTP server
+# 基础 HTTP 服务器
 claude mcp add --transport http <server-name> <url>
 
-# HTTP server with headers
+# 带 header 的 HTTP 服务器
 claude mcp add --transport http --header "Authorization: Bearer <token>" <server-name> <url>
 ```
 
