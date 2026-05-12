@@ -13,7 +13,7 @@ Ralplan 是 `$plan --consensus` 的简写别名。它会触发 Planner、Archite
 $ralplan "task description"
 ```
 
-## Flags
+## 标志
 
 - `--interactive`：在关键决策点开启用户提示（步骤 2 的草案评审与步骤 6 的最终批准）。不加该 flag 时工作流全自动跑 —— Planner → Architect → Critic 循环 —— 直接输出最终计划，不再请求确认。
 - `--deliberate`：为高风险工作强制 deliberate 模式。会加上 pre-mortem（3 个场景）与扩展测试规划（unit/integration/e2e/observability）。不加该 flag 时，如果请求明确暗示高风险（鉴权/安全、迁移、破坏性改动、生产事故、合规/PII、公开 API 破坏），deliberate 模式仍可能自动开启。
@@ -62,7 +62,7 @@ $plan --consensus --interactive <arguments>
 
 共识模式的详情请参考 Plan skill 的完整文档。
 
-## Goal-Mode Follow-up Suggestions
+## Goal-Mode 后续建议
 
 当 ralplan 输出最终移交或请用户选择下一条通道时，在已有的 Ralph 与 team 选项旁边附上面向产品的目标模式建议：
 

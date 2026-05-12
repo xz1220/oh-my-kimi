@@ -60,20 +60,20 @@ description: TDD 兼容垫片（已弃用）
 引导 TDD 时：
 
 ```
-## TDD Cycle: [特性名]
+## TDD 循环：[特性名]
 
-### RED Phase
-Test: [测试代码]
-Expected failure: [你预期的报错]
-Actual: [运行结果，显示失败]
+### RED 阶段
+测试：[测试代码]
+预期失败：[你预期的报错]
+实际结果：[运行结果，显示失败]
 
-### GREEN Phase
-Implementation: [最小代码]
-Result: [运行结果，显示通过]
+### GREEN 阶段
+实现：[最小代码]
+结果：[运行结果，显示通过]
 
-### REFACTOR Phase
-Changes: [清理了什么]
-Result: [测试仍然通过]
+### REFACTOR 阶段
+变更：[清理了什么]
+结果：[测试仍然通过]
 ```
 
 ## 外部模型咨询（推荐）

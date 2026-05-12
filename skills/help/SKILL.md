@@ -19,7 +19,7 @@ argument-hint: "[topic]"
 - `/skill:visual-verdict`：前端视觉 QA。
 - `/skill:ai-slop-cleaner`：清理 pass。
 
-## Agent Bundle
+## Agent 套件
 
 用完整 bundle 跑：
 

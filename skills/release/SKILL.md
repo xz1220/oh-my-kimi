@@ -75,25 +75,25 @@ level: 3
 # Release Rules
 <!-- last-analyzed: YYYY-MM-DDTHH:MM:SSZ -->
 
-## Version Sources
+## 版本来源
 <!-- 文件列表 + 模式 -->
 
-## Release Trigger
+## 发布触发
 <!-- 触发发布的方式 -->
 
-## Test Gate
+## 测试门禁
 <!-- 命令 + CI job 名 -->
 
-## Registry / Distribution
+## 注册表 / 分发
 <!-- npm、PyPI、Docker 等 + 负责发布的 CI job -->
 
-## Release Notes Strategy
+## 发布说明策略
 <!-- 约定 + 文件 -->
 
-## CI Workflow Files
+## CI 工作流文件
 <!-- 相关 workflow 文件路径 -->
 
-## First-Time Setup Gaps
+## 首次设置缺口
 <!-- 分析中发现的缺失项，或 "none" -->
 ```
 
@@ -138,7 +138,7 @@ level: 3
 
 **示例条目格式：**
 ```
-### Bug Fixes
+### Bug 修复
 - Fix session drop on token expiry (#123) — @contributor
 ```
 

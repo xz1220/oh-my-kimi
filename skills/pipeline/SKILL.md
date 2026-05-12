@@ -25,7 +25,7 @@ RALPLAN (consensus planning) -> team-exec (Kimi CLI workers) -> ralph-verify (ar
 | `workerCount` | 2 | Kimi CLI team worker 数量 |
 | `agentType` | `executor` | team worker 的 agent 类型 |
 
-## Stage Interface
+## 阶段接口
 
 每个 stage 实现 `PipelineStage` 接口：
 

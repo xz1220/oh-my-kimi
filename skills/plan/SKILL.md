@@ -131,14 +131,14 @@ Plan 通过智能交互产出全面、可执行的工作方案。它会自动判
 ### 方案输出格式
 
 每份方案包含：
-- Requirements Summary
-- Acceptance Criteria（可测试）
-- Implementation Steps（含文件引用）
-- Risks and Mitigations
-- Verification Steps
-- 共识 / ralplan：**RALPLAN-DR summary**（Principles、Decision Drivers、Options）
-- 共识 / ralplan 最终输出：**ADR**（Decision、Drivers、Alternatives considered、Why chosen、Consequences、Follow-ups）
-- deliberate 共识模式：**Pre-mortem（3 个场景）** 与 **Expanded Test Plan**（unit/integration/e2e/observability）
+- 需求摘要
+- 验收标准（可测试）
+- 实现步骤（含文件引用）
+- 风险与缓解措施
+- 验证步骤
+- 共识 / ralplan：**RALPLAN-DR 摘要**（原则、决策驱动因素、选项）
+- 共识 / ralplan 最终输出：**ADR**（决策、驱动因素、已考虑替代方案、选择理由、后果、后续项）
+- deliberate 共识模式：**Pre-mortem（3 个场景）** 与 **扩展测试计划**（unit/integration/e2e/observability）
 
 方案保存到 `.omk/plans/`。Draft 放到 `.omk/drafts/`。
 </Steps>

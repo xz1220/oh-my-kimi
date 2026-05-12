@@ -96,7 +96,7 @@ team 执行遵循阶段化流水线：
 
 `team-plan -> team-prd -> team-exec -> team-verify -> team-fix (loop)`
 
-### Stage Agent Routing
+### 阶段 Agent 路由
 
 每个流水线阶段使用**专门 agent** —— 不只是 executor。Lead 基于阶段与任务特征挑 agent。
 

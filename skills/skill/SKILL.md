@@ -23,21 +23,21 @@ level: 2
 5. 用整齐的表格展示：
 
 ```
-BUILT-IN SKILLS (bundled with oh-my-kimi):
-| Name              | Description                    | Scope    |
+内置 Skills（随 oh-my-kimi 发布）：
+| 名称              | 描述                           | 作用域   |
 |-------------------|--------------------------------|----------|
 | visual-verdict    | Structured visual QA verdicts  | built-in |
 | ralph             | Persistence loop               | built-in |
 
-USER SKILLS (~/.claude/skills/omc-learned/):
-| Name              | Triggers           | Quality | Usage | Scope |
-|-------------------|--------------------|---------|-------|-------|
+用户 Skills（~/.claude/skills/omc-learned/）：
+| 名称              | 触发词             | 质量    | 使用次数 | 作用域 |
+|-------------------|--------------------|---------|----------|--------|
 | error-handler     | fix, error         | 95%     | 42    | user  |
 | api-builder       | api, endpoint      | 88%     | 23    | user  |
 
-PROJECT SKILLS (.omk/skills/):
-| Name              | Triggers           | Quality | Usage | Scope   |
-|-------------------|--------------------|---------|-------|---------|
+项目 Skills（.omk/skills/）：
+| 名称              | 触发词             | 质量    | 使用次数 | 作用域   |
+|-------------------|--------------------|---------|----------|----------|
 | test-runner       | test, run          | 92%     | 15    | project |
 ```
 
@@ -75,29 +75,29 @@ triggers:
 argument-hint: "<args>"
 ---
 
-# <Name> Skill
+# <名称> Skill
 
-## Purpose
+## 用途
 
 [描述本 skill 做什么]
 
-## When to Activate
+## 何时启用
 
 [描述 triggers 与条件]
 
-## Workflow
+## 工作流
 
 1. [步骤 1]
 2. [步骤 2]
 3. [步骤 3]
 
-## Examples
+## 示例
 
 ```
 /oh-my-kimi:<name> example-arg
 ```
 
-## Notes
+## 注意事项
 
 [附加上下文、边界条件、坑]
 ```
@@ -108,15 +108,15 @@ argument-hint: "<args>"
 **示例：**
 ```
 User: /skill add custom-logger
-Assistant: Creating new skill 'custom-logger'...
+Assistant: 正在创建新 skill 'custom-logger'...
 
-Description: Enhanced logging with structured output
-Triggers (comma-separated): log, logger, logging
-Argument hint (optional): <level> [message]
-Scope (user/project): user
+描述：带结构化输出的增强日志
+触发词（英文逗号分隔）：log, logger, logging
+参数提示（可选）：<level> [message]
+作用域（user/project）：user
 
-✓ Created skill at ~/.claude/skills/omc-learned/custom-logger/SKILL.md
-→ Edit with: /skill edit custom-logger
+✓ 已在 ~/.claude/skills/omc-learned/custom-logger/SKILL.md 创建 skill
+→ 编辑命令：/skill edit custom-logger
 ```
 
 ---
@@ -260,16 +260,16 @@ Assistant: Found 2 skills matching "api endpoint":
 3. **展示完整详情：**
 
 ```
-Skill: custom-logger
-Scope: user (~/.claude/skills/omc-learned/custom-logger/)
-Description: Enhanced logging with structured output
-Triggers: log, logger, logging
-Argument Hint: <level> [message]
-Quality: 95% (if available)
-Usage Count: 42 times (if available)
-File Path: /home/user/.claude/skills/omc-learned/custom-logger/SKILL.md
+Skill：custom-logger
+作用域：user（~/.claude/skills/omc-learned/custom-logger/）
+描述：带结构化输出的增强日志
+触发词：log, logger, logging
+参数提示：<level> [message]
+质量：95%（如果可用）
+使用次数：42 次（如果可用）
+文件路径：/home/user/.claude/skills/omc-learned/custom-logger/SKILL.md
 
---- FULL CONTENT ---
+--- 完整内容 ---
 [完整 markdown 内容]
 ```
 
@@ -278,17 +278,17 @@ File Path: /home/user/.claude/skills/omc-learned/custom-logger/SKILL.md
 **示例：**
 ```
 User: /skill info custom-logger
-Assistant: Skill: custom-logger
-Scope: user
-Description: Enhanced logging with structured output
-Triggers: log, logger, logging
-File: ~/.claude/skills/omc-learned/custom-logger/SKILL.md
+Assistant: Skill：custom-logger
+作用域：user
+描述：带结构化输出的增强日志
+触发词：log, logger, logging
+文件：~/.claude/skills/omc-learned/custom-logger/SKILL.md
 
---- CONTENT ---
+--- 内容 ---
 # Custom Logger Skill
 
-## Purpose
-Enhanced logging with structured JSON output...
+## 用途
+带结构化 JSON 输出的增强日志...
 [剩余内容]
 ```
 
@@ -309,29 +309,29 @@ Enhanced logging with structured JSON output...
 3. **展示同步机会：**
 
 ```
-SYNC REPORT:
+同步报告：
 
-User-only skills (5):
+仅用户作用域存在的 skills（5）：
   - error-handler
   - api-builder
   - custom-logger
   - test-generator
   - deploy-helper
 
-Project-only skills (2):
+仅项目作用域存在的 skills（2）：
   - test-runner
   - backend-scaffold
 
-Common skills (3):
+两个作用域都有的 skills（3）：
   - frontend-ui-ux
   - git-master
   - planner
 
-Options:
-  [1] Copy user skill to project
-  [2] Copy project skill to user
-  [3] View differences
-  [4] Cancel
+选项：
+  [1] 把用户 skill 复制到项目
+  [2] 把项目 skill 复制到用户
+  [3] 查看差异
+  [4] 取消
 ```
 
 4. **处理用户选择：**
@@ -345,13 +345,13 @@ Options:
 **示例：**
 ```
 User: /skill sync
-Assistant: Found 5 user-only skills and 2 project-only skills.
+Assistant: 找到 5 个仅用户作用域存在的 skills，以及 2 个仅项目作用域存在的 skills。
 
-Copy 'error-handler' from user to project? (yes/no/skip)
+把 'error-handler' 从用户作用域复制到项目吗？（yes/no/skip）
 User: yes
-Assistant: ✓ Copied 'error-handler' to .omk/skills/
+Assistant: ✓ 已把 'error-handler' 复制到 .omk/skills/
 
-Copy 'api-builder' from user to project? (yes/no/skip)
+把 'api-builder' 从用户作用域复制到项目吗？（yes/no/skip）
 User: skip
 ...
 ```
@@ -372,10 +372,10 @@ User: skip
 # 检查并创建用户级 skill 目录
 USER_SKILLS_DIR="${KIMI_CONFIG_DIR:-$HOME/.claude}/skills/omc-learned"
 if [ -d "$USER_SKILLS_DIR" ]; then
-  echo "User skills directory exists: $USER_SKILLS_DIR"
+  echo "用户 skill 目录已存在：$USER_SKILLS_DIR"
 else
   mkdir -p "$USER_SKILLS_DIR"
-  echo "Created user skills directory: $USER_SKILLS_DIR"
+  echo "已创建用户 skill 目录：$USER_SKILLS_DIR"
 fi
 
 # 检查并创建项目级 skill 目录
@@ -502,40 +502,40 @@ echo "Total skills across all directories: $TOTAL"
 ```markdown
 ---
 id: error-[unique-id]
-name: [Error Name]
-description: Solution for [specific error in specific context]
+name: [错误名称]
+description: [特定上下文中特定错误的解决方案]
 source: conversation
 triggers: ["error message fragment", "file path", "symptom"]
 quality: high
 ---
 
-# [Error Name]
+# [错误名称]
 
-## The Insight
+## 核心洞察
 这个错误的根因是什么？你发现了什么原则？
 
-## Why This Matters
+## 为什么重要
 不知道这点会出什么问题？是什么症状把你引到这里？
 
-## Recognition Pattern
+## 识别模式
 怎么识别这个模式？有哪些信号？
-- Error message: "[exact error]"
-- File: [specific file path]
-- Context: [when does this occur]
+- 错误信息："[精确错误]"
+- 文件：[具体文件路径]
+- 上下文：[什么时候发生]
 
-## The Approach
+## 处理方法
 分步解决方案：
 1. [带文件 / 行号引用的具体操作]
 2. [带文件 / 行号引用的具体操作]
 3. [验证步骤]
 
-## Example
+## 示例
 \`\`\`typescript
-// Before (broken)
-[problematic code]
+// 修改前（有问题）
+[问题代码]
 
-// After (fixed)
-[corrected code]
+// 修改后（已修复）
+[修正后的代码]
 \`\`\`
 ```
 
@@ -544,33 +544,33 @@ quality: high
 ```markdown
 ---
 id: workflow-[unique-id]
-name: [Workflow Name]
-description: Process for [specific task in this codebase]
+name: [工作流名称]
+description: [本代码库中特定任务的流程]
 source: conversation
 triggers: ["task description", "file pattern", "goal keyword"]
 quality: high
 ---
 
-# [Workflow Name]
+# [工作流名称]
 
-## The Insight
+## 核心洞察
 这个工作流与显而易见的做法有什么不同？
 
-## Why This Matters
+## 为什么重要
 不按这个流程走会失败在哪里？
 
-## Recognition Pattern
+## 识别模式
 什么时候该用这个工作流？
-- Task type: [specific task]
-- Files involved: [specific patterns]
-- Indicators: [how to recognize]
+- 任务类型：[具体任务]
+- 涉及文件：[具体模式]
+- 识别信号：[如何识别]
 
-## The Approach
+## 处理方法
 1. [带具体命令 / 文件的步骤]
 2. [带具体命令 / 文件的步骤]
 3. [验证]
 
-## Gotchas
+## 注意事项
 - [常见错误及如何避免]
 - [边界情况及如何处理]
 ```
@@ -580,38 +580,38 @@ quality: high
 ```markdown
 ---
 id: pattern-[unique-id]
-name: [Pattern Name]
-description: Pattern for [specific use case in this codebase]
+name: [模式名称]
+description: [本代码库中特定用例的模式]
 source: conversation
 triggers: ["code pattern", "file type", "problem domain"]
 quality: high
 ---
 
-# [Pattern Name]
+# [模式名称]
 
-## The Insight
+## 核心洞察
 这个模式背后的关键原则是什么？
 
-## Why This Matters
+## 为什么重要
 这个模式在**本**代码库里解决了什么问题？
 
-## Recognition Pattern
+## 识别模式
 什么时候应用这个模式？
-- File types: [specific files]
-- Problem: [specific problem]
-- Context: [codebase-specific context]
+- 文件类型：[具体文件]
+- 问题：[具体问题]
+- 上下文：[代码库特定上下文]
 
-## The Approach
+## 处理方法
 决策启发式，不只是代码：
 1. [基于原则的步骤]
 2. [基于原则的步骤]
 
-## Example
+## 示例
 \`\`\`typescript
 [展示该原则的示例]
 \`\`\`
 
-## Anti-Pattern
+## 反模式
 **不该**做什么，以及为什么：
 \`\`\`typescript
 [常见错误]
@@ -623,34 +623,34 @@ quality: high
 ```markdown
 ---
 id: integration-[unique-id]
-name: [Integration Name]
-description: How [system A] integrates with [system B] in this codebase
+name: [集成名称]
+description: [本代码库中 system A 如何与 system B 集成]
 source: conversation
 triggers: ["system name", "integration point", "config file"]
 quality: high
 ---
 
-# [Integration Name]
+# [集成名称]
 
-## The Insight
+## 核心洞察
 这两个系统的连接方式有什么非显然之处？
 
-## Why This Matters
+## 为什么重要
 不理解这个集成会有什么坏？
 
-## Recognition Pattern
+## 识别模式
 什么时候你在和这个集成打交道？
-- Files: [specific integration files]
-- Config: [specific config locations]
-- Symptoms: [what indicates integration issues]
+- 文件：[具体集成文件]
+- 配置：[具体配置位置]
+- 症状：[哪些信号表明集成有问题]
 
-## The Approach
+## 处理方法
 如何正确地和这个集成打交道：
 1. [带文件路径的配置步骤]
 2. [带具体细节的设置步骤]
 3. [验证步骤]
 
-## Gotchas
+## 注意事项
 - [集成特有的坑 #1]
 - [集成特有的坑 #2]
 ```

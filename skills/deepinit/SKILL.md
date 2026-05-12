@@ -41,40 +41,40 @@ AGENTS.md 文件作为 **AI 可读文档**，帮助 agent 理解：
 
 # {Directory Name}
 
-## Purpose
+## 用途
 {One-paragraph description of what this directory contains and its role}
 
-## Key Files
+## 关键文件
 {List each significant file with a one-line description}
 
 | File | Description |
 |------|-------------|
 | `file.ts` | Brief description of purpose |
 
-## Subdirectories
+## 子目录
 {List each subdirectory with brief purpose}
 
 | Directory | Purpose |
 |-----------|---------|
 | `subdir/` | What it contains (see `subdir/AGENTS.md`) |
 
-## For AI Agents
+## 面向 AI Agents
 
-### Working In This Directory
+### 在此目录工作
 {Special instructions for AI agents modifying files here}
 
-### Testing Requirements
+### 测试要求
 {How to test changes in this directory}
 
-### Common Patterns
+### 常见模式
 {Code patterns or conventions used here}
 
-## Dependencies
+## 依赖
 
-### Internal
+### 内部
 {References to other parts of the codebase this depends on}
 
-### External
+### 外部
 {Key external packages/libraries used}
 
 <!-- MANUAL: Any manually added notes below this line are preserved on regeneration -->
@@ -172,10 +172,10 @@ grep -r "<!-- Parent:" --include="AGENTS.md" .
 <!-- Parent: ../AGENTS.md -->
 # {Directory Name}
 
-## Purpose
+## 用途
 Container directory for organizing related modules.
 
-## Subdirectories
+## 子目录
 | Directory | Purpose |
 |-----------|---------|
 | `subdir/` | Description (see `subdir/AGENTS.md`) |
@@ -210,41 +210,41 @@ Container directory for organizing related modules.
 
 # my-project
 
-## Purpose
+## 用途
 A web application for managing user tasks with real-time collaboration features.
 
-## Key Files
+## 关键文件
 | File | Description |
 |------|-------------|
 | `package.json` | Project dependencies and scripts |
 | `tsconfig.json` | TypeScript configuration |
 | `.env.example` | Environment variable template |
 
-## Subdirectories
+## 子目录
 | Directory | Purpose |
 |-----------|---------|
 | `src/` | Application source code (see `src/AGENTS.md`) |
 | `docs/` | Documentation (see `docs/AGENTS.md`) |
 | `tests/` | Test suites (see `tests/AGENTS.md`) |
 
-## For AI Agents
+## 面向 AI Agents
 
-### Working In This Directory
+### 在此目录工作
 - Always install dependencies after modifying the project manifest
 - Use TypeScript strict mode
 - Follow ESLint rules
 
-### Testing Requirements
+### 测试要求
 - Run tests before committing
 - Ensure >80% coverage
 
-### Common Patterns
+### 常见模式
 - Use barrel exports (index.ts)
 - Prefer functional components
 
-## Dependencies
+## 依赖
 
-### External
+### 外部
 - React 18.x - UI framework
 - TypeScript 5.x - Type safety
 - Vite - Build tool
@@ -259,44 +259,44 @@ A web application for managing user tasks with real-time collaboration features.
 
 # components
 
-## Purpose
+## 用途
 Reusable React components organized by feature and complexity.
 
-## Key Files
+## 关键文件
 | File | Description |
 |------|-------------|
 | `index.ts` | Barrel export for all components |
 | `Button.tsx` | Primary button component |
 | `Modal.tsx` | Modal dialog component |
 
-## Subdirectories
+## 子目录
 | Directory | Purpose |
 |-----------|---------|
 | `forms/` | Form-related components (see `forms/AGENTS.md`) |
 | `layout/` | Layout components (see `layout/AGENTS.md`) |
 
-## For AI Agents
+## 面向 AI Agents
 
-### Working In This Directory
+### 在此目录工作
 - Each component has its own file
 - Use CSS modules for styling
 - Export via index.ts
 
-### Testing Requirements
+### 测试要求
 - Unit tests in `__tests__/` subdirectory
 - Use React Testing Library
 
-### Common Patterns
+### 常见模式
 - Props interfaces defined above component
 - Use forwardRef for DOM-exposing components
 
-## Dependencies
+## 依赖
 
-### Internal
+### 内部
 - `src/hooks/` - Custom hooks used by components
 - `src/utils/` - Utility functions
 
-### External
+### 外部
 - `clsx` - Conditional class names
 - `lucide-react` - Icons
 

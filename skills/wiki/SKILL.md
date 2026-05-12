@@ -10,42 +10,42 @@ triggers: ["wiki", "wiki this", "wiki add", "wiki lint", "wiki query"]
 
 ## 操作
 
-### Ingest
+### 写入
 把知识处理成 wiki 页面。一次 ingest 可以同时改动多页。
 
 ```
 wiki_ingest({ title: "Auth Architecture", content: "...", tags: ["auth", "architecture"], category: "architecture" })
 ```
 
-### Query
+### 查询
 按关键词与标签跨所有 wiki 页面搜索。返回匹配的页面与片段 —— 由你（LLM）基于结果综合给出带引用的回答。
 
 ```
 wiki_query({ query: "authentication", tags: ["auth"], category: "architecture" })
 ```
 
-### Lint
+### 检查
 对 wiki 做健康检查。检测孤页、过时内容、断开的交叉引用、超大页面与结构性矛盾。
 
 ```
 wiki_lint()
 ```
 
-### Quick Add
+### 快速添加
 快速添加单页（比 ingest 更简单）。
 
 ```
 wiki_add({ title: "Page Title", content: "...", tags: ["tag1"], category: "decision" })
 ```
 
-### List / Read / Delete
+### 列出 / 读取 / 删除
 ```
 wiki_list()           # 列出所有页面（读 index.md）
 wiki_read({ page: "auth-architecture" })  # 读指定页面
 wiki_delete({ page: "outdated-page" })    # 删除页面
 ```
 
-### Log
+### 日志
 通过读 `.omk/wiki/log.md` 查看 wiki 操作历史。
 
 ## 分类
