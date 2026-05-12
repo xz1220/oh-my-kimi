@@ -137,7 +137,7 @@ curl -fsSL https://raw.githubusercontent.com/xz1220/oh-my-kimi/main/install.sh |
 
 - **HUD 状态面板**：抄 OMX 的 `omx hud --watch` 思路，给 Kimi CLI 配 tmux HUD
 - **多国产 host 适配**：MiniMax Mini-Agent / GLM-CLI 的扩展面如够，把 skill catalog 接过去 → 演化为 `oh-my-cn-coders`（覆盖国产谱系）
-- **贡献回上游**：和 Yeachan-Heo 沟通，看 oh-my-kimi 能不能并入 oh-my-* 官方谱系（变成 `Yeachan-Heo/oh-my-kimi`），或保持独立维护建立协作关系
+- **贡献回上游**：和 Yeachan-Heo 沟通，看 oh-my-kimi 能不能并入 oh-my-* 官方谱系（变成 `xz1220/oh-my-kimi`），或保持独立维护建立协作关系
 - **国内 MCP 集成**：飞书 / 钉钉 / 企业微信 / 阿里云 / 腾讯云 MCP server 默认推荐
 
 ## 待定决策（优先级排序）

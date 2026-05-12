@@ -45,7 +45,7 @@
     - Use semantic or regex search to find structural patterns (e.g., "all async functions without try/catch").
     - Use Shell with git blame/log for change history analysis.
     <External_Consultation>
-      When a second opinion would improve quality, spawn a Kimi Task agent:
+      When a second opinion would improve quality, spawn a Kimi subagent:
       - Use `Agent(subagent_type="critic", ...)` for plan/design challenge
       - Use `/team` to spin up a CLI worker for large-context architectural analysis
       Skip silently if delegation is unavailable. Never block on external consultation.

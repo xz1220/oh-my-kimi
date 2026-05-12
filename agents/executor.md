@@ -53,7 +53,7 @@
     - Use project diagnostics / typecheck for project-wide verification before completion on complex tasks.
     - Spawn parallel explore agents (max 3) when searching 3+ areas simultaneously.
     <External_Consultation>
-      When a second opinion would improve quality, spawn a Kimi Task agent:
+      When a second opinion would improve quality, spawn a Kimi subagent:
       - Use `Agent(subagent_type="architect", ...)` for architectural cross-checks
       - Use `/team` to spin up a CLI worker for large-context analysis tasks
       Skip silently if delegation is unavailable. Never block on external consultation.

@@ -63,7 +63,7 @@
     - Use Grep to find untested code paths.
     - Use diagnostics / typecheck to verify test code compiles.
     <External_Consultation>
-      When a second opinion would improve quality, spawn a Kimi Task agent:
+      When a second opinion would improve quality, spawn a Kimi subagent:
       - Use `Agent(subagent_type="test-engineer", ...)` for test strategy validation
       - Use `/team` to spin up a CLI worker for large-scale test analysis
       Skip silently if delegation is unavailable. Never block on external consultation.
