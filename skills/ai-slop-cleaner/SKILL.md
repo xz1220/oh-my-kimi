@@ -95,42 +95,42 @@ description: 跑反 slop 的清理 / 重构 / 去 slop 工作流
    - 剩余风险
    - 残留的后续项或有意推迟的清理
 
-## Output Format
+## 输出格式
 
 ```text
-AI SLOP CLEANUP REPORT
-======================
+AI SLOP 清理报告
+================
 
-Scope: [files or feature area]
-Behavior Lock: [targeted regression tests added/run]
-Cleanup Plan: [bounded smells and order]
-Fallback Findings: [none, or finding -> masking fallback slop / grounded compatibility/fail-safe fallback -> escalation status]
-UI/Design Findings: [none/N/A, or signal -> action taken/deferred -> intentional exception rationale]
+范围：[文件或功能区域]
+行为锁定：[已添加 / 已运行的定向回归测试]
+清理计划：[受限 smell 与处理顺序]
+Fallback 发现：[无，或发现项 -> masking fallback slop / grounded compatibility/fail-safe fallback -> 升级状态]
+UI / 设计发现：[无 / 不适用，或信号 -> 已处理 / 推迟 -> 有意例外的理由]
 
-Passes Completed:
-- Fallback-like code resolution gate - [root-cause repair, explicit failure behavior, preserved grounded fallback, or ralplan handoff]
-1. Pass 1: Dead code deletion - [concise fix]
-2. Pass 2: Duplicate removal - [concise fix]
-3. Pass 3: Naming/error handling cleanup - [concise fix]
-4. Pass 4: Test reinforcement - [concise fix]
+已完成的清理轮次：
+- Fallback 类代码决议门禁 - [根因修复、显式失败行为、保留有依据的 fallback，或 ralplan 交接]
+1. 第 1 轮：删除死代码 - [简要修复]
+2. 第 2 轮：移除重复 - [简要修复]
+3. 第 3 轮：命名 / 错误处理清理 - [简要修复]
+4. 第 4 轮：测试加固 - [简要修复]
 
-Quality Gates:
-- Regression tests: PASS/FAIL
-- Lint: PASS/FAIL
-- Typecheck: PASS/FAIL
-- Tests: PASS/FAIL
-- Static/security scan: PASS/FAIL or N/A
+质量门禁：
+- 回归测试：通过 / 失败
+- Lint：通过 / 失败
+- Typecheck：通过 / 失败
+- 测试：通过 / 失败
+- 静态 / 安全扫描：通过 / 失败 / 不适用
 
-Changed Files:
-- [path] - [simplification]
+变更文件：
+- [路径] - [简化内容]
 
-Fallback Review:
-- Findings: [fallback-like findings detected]
-- Classification: [masking fallback slop | grounded fallback]
-- Escalation Status: [none | raised to leader/ralplan | no escalation]
+Fallback 评审：
+- 发现：[检测到的 fallback 类发现]
+- 分类：[masking fallback slop | grounded fallback]
+- 升级状态：[无 | 已提交给 leader / ralplan | 无需升级]
 
-Remaining Risks:
-- [none or short deferred item]
+剩余风险：
+- [无，或简短的延后事项]
 ```
 
 ## 场景示例
