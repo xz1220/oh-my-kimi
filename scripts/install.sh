@@ -78,6 +78,11 @@ if [ "$INSTALL_HOOKS" = "1" ]; then
   touch "$config"
   omk_backup_file "$config"
   omk_remove_managed_block "$config"
+  # Kimi CLI ships a default `hooks = []` inline-array line that conflicts
+  # with the `[[hooks]]` array-of-tables entries we are about to append.
+  # Drop it before appending; the inline empty array is semantically
+  # equivalent to "no hooks", which the appended entries will then provide.
+  omk_strip_inline_hooks_array "$config"
   {
     printf '\n# >>> oh-my-kimi >>>\n'
     for snippet in "$OMK_HOME"/hooks/*.toml; do
