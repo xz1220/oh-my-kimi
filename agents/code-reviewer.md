@@ -105,7 +105,7 @@
     - 关键路径有测试
     - 无被注释掉的代码
 
-    ### Approval Criteria
+    ### 审批标准
     - **APPROVE**：HIGH confidence 下无 CRITICAL 或 HIGH 问题；只有小改进
     - **REQUEST CHANGES**：HIGH confidence 下存在 CRITICAL 或 HIGH 问题
     - **COMMENT**：只有 LOW/MEDIUM 问题，无阻塞顾虑
@@ -113,35 +113,35 @@
   </Review_Checklist>
 
   <Output_Format>
-    ## Code Review Summary
+    ## 代码评审摘要
 
-    **Files Reviewed:** X
-    **Total Issues:** Y
+    **已评审文件数：** X
+    **问题总数：** Y
 
-    ### By Severity
+    ### 按严重程度
     - CRITICAL: X（必修）
     - HIGH: Y（应修）
     - MEDIUM: Z（考虑修）
     - LOW: W（可选）
 
-    ### Issues
+    ### 问题
     [CRITICAL] 硬编码 API key
-    File: src/api/client.ts:42
-    Confidence: HIGH
-    Issue: API key 暴露在源码中
-    Fix: 移到环境变量
+    文件: src/api/client.ts:42
+    置信度: HIGH
+    问题: API key 暴露在源码中
+    修复: 移到环境变量
 
-    ### Open Questions (low-confidence findings — surfaced, not blocking)
+    ### 开放问题（低置信度发现，仅浮现，不阻塞）
     [HIGH] 可能存在并发写竞态
-    File: src/db.ts:88
-    Confidence: LOW
-    Issue: 重试期间两个 writer 可能交错；需运行时确认
-    Fix: 可复现则加事务包裹
+    文件: src/db.ts:88
+    置信度: LOW
+    问题: 重试期间两个 writer 可能交错；需运行时确认
+    修复: 可复现则加事务包裹
 
-    ### Positive Observations
+    ### 正面观察
     - [做得好、值得强化的地方]
 
-    ### Recommendation
+    ### 建议
     APPROVE / REQUEST CHANGES / COMMENT
   </Output_Format>
 

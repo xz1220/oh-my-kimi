@@ -110,9 +110,9 @@ Focus:
 - Strongest counterargument against approving as-is
 
 Output:
-- Architectural Status: CLEAR / WATCH / BLOCK
-- File:line evidence for each concern
-- Concrete tradeoff or design recommendation"
+- 架构状态：CLEAR / WATCH / BLOCK
+- 每个顾虑的 file:line 证据
+- 具体权衡或设计建议"
 )
 
 Run both lanes in parallel, then synthesize them with the deterministic rules above.
@@ -145,68 +145,68 @@ code-reviewer agent 应当咨询 Codex 做交叉验证。
 
 **注意：** Codex 调用最长可能耗时 1 小时，咨询前请考虑评审时限。
 
-## Output Format
+## 输出格式
 
 ```
-CODE REVIEW REPORT
-==================
+代码评审报告
+============
 
-Files Reviewed: 8
-Total Issues: 12
-Architectural Status: WATCH
+已评审文件数：8
+问题总数：12
+架构状态：WATCH
 
-CRITICAL (0)
------------
-(none)
+CRITICAL（0）
+------------
+（无）
 
-HIGH (0)
---------
-(none)
+HIGH（0）
+---------
+（无）
 
-MEDIUM (7)
+MEDIUM（7）
 ----------
 1. src/api/auth.ts:42
-   Issue: Email normalization logic is duplicated instead of reusing the shared helper
-   Risk: Validation rules can drift between authentication paths
-   Fix: Route both paths through the shared normalization helper
+   问题：邮件归一化逻辑重复，没有复用共享 helper
+   风险：不同认证路径的校验规则可能漂移
+   修复：让两条路径都走共享的归一化 helper
 
 2. src/components/UserProfile.tsx:89
-   Issue: Derived permissions are recalculated on every render
-   Risk: Avoidable work during profile refreshes
-   Fix: Memoize the derived permissions list or compute it upstream
+   问题：派生权限在每次渲染时重新计算
+   风险：资料刷新时产生可避免的额外工作
+   修复：缓存派生权限列表，或在上游计算
 
 3. src/utils/validation.ts:15
-   Issue: Form-layer and server-layer validation messages are defined separately
-   Risk: User-facing validation guidance can become inconsistent
-   Fix: Share one validation message helper across both call sites
+   问题：表单层和服务端层的校验消息分别定义
+   风险：面向用户的校验提示可能不一致
+   修复：在两个调用点共用同一个校验消息 helper
 
-LOW (5)
+LOW（5）
 -------
 ...
 
-ARCHITECTURE WATCHLIST
-----------------------
+架构观察项
+----------
 - src/review/orchestrator.ts:88
-  Concern: Review result synthesis relies on implicit ordering rather than an explicit blocker contract
-  Status: WATCH
-  Recommendation: Define deterministic merge gating before expanding reviewers
+  顾虑：评审结果汇总依赖隐式顺序，而不是显式 blocker 契约
+  状态：WATCH
+  建议：在扩展评审者之前，先定义确定性的合并门禁
 
-SYNTHESIS
----------
-- code-reviewer recommendation: COMMENT
-- architect status: WATCH
-- final recommendation: COMMENT
+综合结论
+--------
+- code-reviewer 建议：COMMENT
+- architect 状态：WATCH
+- 最终建议：COMMENT
 
-RECOMMENDATION: COMMENT
+建议：COMMENT
 
-Address any WATCH concerns before treating the change as merge-ready.
+在把变更视为可合并之前，先处理所有 WATCH 顾虑。
 ```
 
 ## 评审清单
 
 `code-reviewer` lane 检查项：
 
-### Security
+### 安全
 - [ ] 无硬编码 secret（API key、密码、token）
 - [ ] 所有用户输入都做了 sanitize
 - [ ] 防 SQL/NoSQL 注入
@@ -214,20 +214,20 @@ Address any WATCH concerns before treating the change as merge-ready.
 - [ ] 状态变更操作有 CSRF 防护
 - [ ] 鉴权 / 授权落实到位
 
-### Code Quality
+### 代码质量
 - [ ] 函数 < 50 行（参考）
 - [ ] 圈复杂度 < 10
 - [ ] 无深层嵌套（> 4 层）
 - [ ] 无重复逻辑（DRY 原则）
 - [ ] 命名清晰、描述性
 
-### Performance
+### 性能
 - [ ] 没有 N+1 查询模式
 - [ ] 该用缓存的地方用了缓存
 - [ ] 算法高效（能 O(n) 就别 O(n²)）
 - [ ] 没有不必要的重渲染（React/Vue）
 
-### Best Practices
+### 最佳实践
 - [ ] 错误处理存在且合理
 - [ ] 日志级别合理
 - [ ] 公开 API 有文档
