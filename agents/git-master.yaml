@@ -4,7 +4,7 @@ agent:
   name: git-master
   system_prompt_path: ./git-master.md
   when_to_use: |
-    Git expert for atomic commits, rebasing, and history management with style detection
+    Git 专家，做原子提交、rebase 与历史管理，并能识别项目提交风格
   allowed_tools:
     - "kimi_cli.tools.shell:Shell"
     - "kimi_cli.tools.file:ReadFile"

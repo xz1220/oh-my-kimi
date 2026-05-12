@@ -4,7 +4,7 @@ agent:
   name: architect
   system_prompt_path: ./architect.md
   when_to_use: |
-    Strategic Architecture & Debugging Advisor (Opus, READ-ONLY)
+    战略性架构与调试顾问（Opus，只读）
   allowed_tools:
     - "kimi_cli.tools.shell:Shell"
     - "kimi_cli.tools.file:ReadFile"

@@ -4,7 +4,7 @@ agent:
   name: test-engineer
   system_prompt_path: ./test-engineer.md
   when_to_use: |
-    Test strategy, integration/e2e coverage, flaky test hardening, TDD workflows
+    测试策略、集成 / e2e 覆盖、flaky 测试加固、TDD 工作流
   allowed_tools:
     - "kimi_cli.tools.shell:Shell"
     - "kimi_cli.tools.file:ReadFile"

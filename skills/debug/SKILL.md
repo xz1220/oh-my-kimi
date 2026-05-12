@@ -1,35 +1,35 @@
 ---
 name: debug
-description: Diagnose the current oh-my-kimi session or repo state using logs, traces, state, and focused reproduction
+description: 用日志、trace、状态和定向复现来诊断当前 oh-my-kimi 会话或仓库状态
 ---
 
 # Debug
 
-Use this skill when the user wants help diagnosing a current Kimi CLI session problem, workflow breakage, or confusing runtime behavior.
+当用户希望你帮忙诊断当前 Kimi CLI 会话问题、工作流故障或令人困惑的运行时行为时使用该 skill。
 
-## Goal
-Find the real failure signal quickly and explain the next corrective step.
+## 目标
+快速找到真正的失败信号，并说明下一个纠正步骤。
 
-## Workflow
-1. Read the user’s issue description carefully.
-2. Inspect the most relevant local evidence first:
-   - trace tools
-   - state tools
-   - notepad / project memory when relevant
-   - failing tests or commands
-3. Reproduce the issue narrowly if possible.
-4. Distinguish symptoms from root cause.
-5. Recommend the smallest next fix or verification step.
+## 工作流
+1. 仔细阅读用户的问题描述。
+2. 先看最相关的本地证据：
+   - trace 工具
+   - state 工具
+   - 相关时看 notepad / 项目记忆
+   - 失败的测试或命令
+3. 可能的话做窄范围复现。
+4. 区分症状与根因。
+5. 建议最小的下一步修复或验证动作。
 
-## Rules
-- Prefer real evidence over guesses.
-- Use the trace/state surfaces when the issue involves orchestration, hooks, or agent flow.
-- If the issue is actually a product/runtime bug rather than app code, say so plainly.
-- Do not prescribe broad rewrites before isolating the failure.
+## 规则
+- 优先靠真实证据，而不是猜测。
+- 涉及编排、hook 或 agent 流时使用 trace/state 接口。
+- 如果问题其实是产品 / 运行时的 bug 而不是应用代码，直接说清楚。
+- 在隔离失败前不要开广泛重写的药方。
 
-## Output
-- Observed failure
-- Root-cause hypothesis
-- Evidence for that hypothesis
-- Smallest next action
+## 输出
+- 观察到的失败
+- 根因假设
+- 该假设的证据
+- 最小的下一动作
 

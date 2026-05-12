@@ -6,58 +6,58 @@ agent:
   subagents:
     analyst:
       path: ./analyst.yaml
-      description: "Pre-planning consultant for requirements analysis"
+      description: "用于需求分析的前置规划顾问"
     architect:
       path: ./architect.yaml
-      description: "Strategic Architecture & Debugging Advisor (Opus, READ-ONLY)"
+      description: "战略性架构与调试顾问（Opus，只读）"
     code-reviewer:
       path: ./code-reviewer.yaml
-      description: "Expert code review specialist with severity-rated feedback, logic defect detection, SOLID principle checks, style, performance, and quality strategy"
+      description: "专业代码评审专家，提供按严重程度评级的反馈，涵盖逻辑缺陷检测、SOLID 原则检查、风格、性能与质量策略"
     code-simplifier:
       path: ./code-simplifier.yaml
-      description: "Simplifies and refines code for clarity, consistency, and maintainability while preserving all functionality. Focuses on recently modified code unless instructed otherwise."
+      description: "在保留全部功能的前提下，简化与精炼代码，以提升清晰度、一致性与可维护性。除非另有指示，专注于近期修改过的代码。"
     critic:
       path: ./critic.yaml
-      description: "Work plan and code review expert — thorough, structured, multi-perspective"
+      description: "工作计划与代码评审专家 —— 彻底、结构化、多视角"
     debugger:
       path: ./debugger.yaml
-      description: "Root-cause analysis, regression isolation, stack trace analysis, build/compilation error resolution"
+      description: "根因分析、回归定位、stack trace 分析、构建 / 编译错误处理"
     designer:
       path: ./designer.yaml
-      description: "UI/UX Designer-Developer for stunning interfaces"
+      description: "用于打造惊艳界面的 UI/UX 设计师 + 开发者"
     document-specialist:
       path: ./document-specialist.yaml
-      description: "External Documentation & Reference Specialist"
+      description: "外部文档与参考资料专家"
     executor:
       path: ./executor.yaml
-      description: "Focused task executor for implementation work"
+      description: "专注实现工作的任务执行者"
     explore:
       path: ./explore.yaml
-      description: "Codebase search specialist for finding files and code patterns"
+      description: "用于查找文件与代码模式的代码库搜索专家"
     git-master:
       path: ./git-master.yaml
-      description: "Git expert for atomic commits, rebasing, and history management with style detection"
+      description: "Git 专家，做原子提交、rebase 与历史管理，并能识别项目提交风格"
     planner:
       path: ./planner.yaml
-      description: "Strategic planning consultant with interview workflow"
+      description: "带访谈式工作流的战略规划顾问"
     qa-tester:
       path: ./qa-tester.yaml
-      description: "Interactive CLI testing specialist using tmux for session management"
+      description: "基于 tmux 做会话管理的交互式 CLI 测试专家"
     scientist:
       path: ./scientist.yaml
-      description: "Data analysis and research execution specialist"
+      description: "数据分析与研究执行专家"
     security-reviewer:
       path: ./security-reviewer.yaml
-      description: "Security vulnerability detection specialist (OWASP Top 10, secrets, unsafe patterns)"
+      description: "安全漏洞检测专家（OWASP Top 10、secret、危险模式）"
     test-engineer:
       path: ./test-engineer.yaml
-      description: "Test strategy, integration/e2e coverage, flaky test hardening, TDD workflows"
+      description: "测试策略、集成 / e2e 覆盖、flaky 测试加固、TDD 工作流"
     tracer:
       path: ./tracer.yaml
-      description: "Evidence-driven causal tracing with competing hypotheses, evidence for/against, uncertainty tracking, and next-probe recommendations"
+      description: "证据驱动的因果追溯：竞争性假设、支持 / 反对证据、不确定性跟踪、下一步取证建议"
     verifier:
       path: ./verifier.yaml
-      description: "Verification strategy, evidence-based completion checks, test adequacy"
+      description: "验证策略、基于证据的完成核查、测试充分性"
     writer:
       path: ./writer.yaml
-      description: "Technical documentation writer for README, API docs, and comments"
+      description: "面向 README、API 文档与代码注释的技术文档写作"

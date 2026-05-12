@@ -4,7 +4,7 @@ agent:
   name: tracer
   system_prompt_path: ./tracer.md
   when_to_use: |
-    Evidence-driven causal tracing with competing hypotheses, evidence for/against, uncertainty tracking, and next-probe recommendations
+    证据驱动的因果追溯：竞争性假设、支持 / 反对证据、不确定性跟踪、下一步取证建议
   allowed_tools:
     - "kimi_cli.tools.shell:Shell"
     - "kimi_cli.tools.file:ReadFile"

@@ -1,146 +1,146 @@
 ---
 name: analyze
-description: "Run read-only deep repository analysis and return a ranked synthesis with explicit confidence, concrete file references, and clear evidence-vs-inference boundaries. Use when a user says 'analyze', 'investigate', 'why does', 'what's causing', or needs grounded cross-file explanation before any changes are proposed."
+description: "跑只读的深度仓库分析，返回一份带置信度排序的综合结论，附具体文件引用、清晰区分证据与推断。当用户说 'analyze'、'investigate'、'why does'、'what's causing'，或在提任何改动方案之前需要跨文件的有据解释时使用。"
 ---
 
-# Analyze — Read-Only Deep Analysis
+# Analyze — 只读深度分析
 
-Use this skill to answer the user’s question through **read-only repository analysis**. The goal is to explain what the codebase most likely says about the question, not to drift into implementation, debugging theater, or generic fix planning.
+用这个 skill 通过**只读的仓库分析**回答用户的问题。目标是解释代码库对该问题最可能说了什么，而不是漂移到实现、调试表演或泛泛的修复方案里。
 
-## Use `$analyze` when
+## 何时使用 `$analyze`
 
-- the user wants a grounded explanation, not code changes
-- the answer requires reading multiple files or tracing behavior across boundaries
-- there are several plausible explanations and they need to be ranked
-- confidence should reflect the strength of the available evidence
-- the user wants to understand architecture, behavior, causality, impact, or tradeoffs before changing anything
+- 用户想要一份有据可依的解释，不要代码改动
+- 答案需要读多个文件或跨边界追踪行为
+- 存在多个合理解释，需要排序
+- 置信度应当反映可得证据的强度
+- 用户想在动手前理解架构、行为、因果、影响范围或权衡
 
-Examples:
-- why a workflow behaves a certain way
-- how a feature is wired across modules
-- what likely explains a failure, regression, or mismatch
-- what would be impacted by changing a dependency or contract
-- which interpretation of the current codebase is best supported
+例子：
+- 为什么一个工作流是某种行为
+- 一个功能在模块之间是如何串起来的
+- 哪种假设最能解释一次失败、回归或不一致
+- 修改某个依赖或契约会影响什么
+- 对当前代码库来说哪种解读最有支撑
 
-## Do not use `$analyze` when
+## 不要在以下情况使用 `$analyze`
 
-- the user explicitly wants code edits, a fix, or execution — use the appropriate implementation lane instead
-- the user wants a new product plan or acceptance criteria — use `$plan` / `$ralplan`
-- the request is a simple one-file fact lookup — read the file and answer directly
-- the request is purely about running the oh-my-kimi tmux team runtime — use `$team` only when oh-my-kimi runtime is active
+- 用户明确想要代码编辑、修复或执行 —— 用对应的实现 lane
+- 用户想要新的产品方案或验收标准 —— 用 `$plan` / `$ralplan`
+- 请求是简单的单文件事实查询 —— 直接读文件并答复
+- 请求只是为了跑 oh-my-kimi 的 tmux team 运行时 —— 只在 oh-my-kimi 运行时启动时用 `$team`
 
-## Non-negotiable contract
+## 不可妥协的契约
 
-Analyze is **read-only by contract**.
+Analyze **按契约只读**。
 
-- Do not edit files.
-- Do not turn the answer into an implementation plan.
-- Do not recommend fixes as the primary output.
-- Do not silently switch into execution work.
-- Do not overclaim certainty.
-- Do not invent facts that are not supported by repository evidence.
-- Do not use judgmental, normative, or speculative language that outruns the evidence.
+- 不要编辑文件。
+- 不要把答复变成实现计划。
+- 不要把修复方案当作主输出。
+- 不要悄悄切到执行工作。
+- 不要过度声称确定性。
+- 不要发明仓库证据不支持的事实。
+- 不要使用超出证据范围的评判性、规范性或推测性语言。
 
-If a next step is helpful, keep it to a **discriminating read-only probe** that would reduce uncertainty.
+如果建议下一步有用，把它限制成一个能减少不确定性的**只读甄别探针**。
 
-## Question-aligned synthesis
+## 与问题对齐的综合
 
-Answer the user’s actual question first.
+先回答用户的真正问题。
 
-- Start from the asked question, not a generic debugger template.
-- Keep the synthesis scoped to what the user needs to know.
-- Scale the depth to the request: for simple or obvious questions, reduce swarm intensity and answer directly after enough reading.
-- For broader questions, expand the search surface but keep the final answer tightly synthesized.
+- 从用户问的问题出发，而不是从泛用 debugger 模板开始。
+- 把综合的范围限定在用户需要知道的内容上。
+- 深度匹配请求：对简单或明显的问题，降低 swarm 强度，读够之后直接回答。
+- 对范围更宽的问题，扩大搜索面，但保持最终答复紧凑。
 
-## Evidence rules
+## 证据规则
 
-Maintain an explicit **evidence-vs-inference distinction**. Every material claim must be labeled as one of:
+显式保持**证据与推断的区分**。每条实质性主张都必须标记为以下之一：
 
-1. **Evidence** — directly supported by concrete repository artifacts
-2. **Inference** — a reasoned conclusion drawn from evidence
-3. **Unknown** — a question the current repository evidence does not resolve
+1. **Evidence** —— 由具体仓库工件直接支持
+2. **Inference** —— 从证据出发推得的结论
+3. **Unknown** —— 当前仓库证据无法解决的问题
 
-Never present an inference as if it were direct evidence.
-Never present a guess as if it were an inference.
-Call out uncertainty explicitly when the codebase does not settle the question.
+永远不要把推断当成直接证据呈现。
+永远不要把猜测当成推断呈现。
+当代码库不能定论时，显式标出不确定性。
 
-### Acceptable evidence
+### 可接受的证据
 
-Prefer stronger evidence over weaker evidence:
+强证据优先于弱证据：
 
-1. direct code paths, contracts, tests, generated artifacts, configs, or docs with concrete file references
-2. multiple independent files pointing to the same conclusion
-3. localized behavioral inference from well-supported code structure
-4. weaker contextual clues that remain explicitly marked as tentative
+1. 带具体文件引用的代码路径、契约、测试、生成物、配置或文档
+2. 多个独立文件指向同一结论
+3. 由结构良好的代码推出的局部行为推断
+4. 较弱的上下文线索，并显式标记为 tentative
 
-Unsupported speculation is not evidence.
+未经支持的推测不算证据。
 
-## Parallel exploration policy
+## 并行探索策略
 
-Parallel exploration is allowed when it improves quality, but it must stay runtime-safe.
+并行探索可以用，前提是它提升质量并保持运行时安全。
 
-- Default to direct read-only analysis when the answer is simple.
-- When parallelism helps, prefer **native subagents by default** or equivalent in-session parallel exploration when available.
-- Keep parallel lanes bounded: each lane should answer a concrete sub-question or inspect a specific subsystem.
-- Use **`$team` only when oh-my-kimi runtime is active** and durable tmux-based coordination is actually needed.
-- Do not imply that `$team` is available in plain Codex/App sessions.
+- 默认是直接的只读分析，答案简单时不要并行。
+- 当并行有助益时，**默认优先使用 native subagent**，或在可用时用等价的会话内并行探索。
+- 各并行 lane 要有边界：每个 lane 回答一个具体子问题或检查一个具体子系统。
+- 仅在 **oh-my-kimi 运行时启动**且确实需要持久的 tmux 协调时用 `$team`。
+- 不要在普通 Codex/App 会话里暗示 `$team` 可用。
 
-A good default split for complex analysis is:
-- one lane for primary code path / contracts
-- one lane for config / orchestration / generated surfaces
-- one lane for tests / docs / secondary corroboration
+对复杂分析的一个不错默认拆分：
+- 一个 lane 负责主代码路径 / 契约
+- 一个 lane 负责配置 / 编排 / 生成产物
+- 一个 lane 负责测试 / 文档 / 二级佐证
 
-## Execution policy
+## 执行策略
 
-- Default to outcome-first progress and completion reporting: state the question, evidence, inference boundaries, and stop condition before adding process detail.
-- Treat newer user task updates as local overrides for the active workflow branch while preserving earlier non-conflicting constraints.
-- If the user says `continue`, keep working from the current analysis state instead of restarting discovery.
+- 默认采取「outcome-first」的推进与完成汇报：先给出问题、证据、推断边界与停止条件，再补流程细节。
+- 把用户新的任务更新当作当前工作流分支的本地覆盖，同时保留此前不冲突的约束。
+- 如果用户说 `continue`，从当前分析状态继续，而不是重新发现。
 
-## Working method
+## 工作方法
 
-1. Restate the question in one sentence.
-2. Identify the smallest set of files most likely to answer it.
-3. Read for direct evidence first.
-4. If needed, open bounded parallel exploration lanes.
-5. Compare competing explanations.
-6. Rank the explanations by support.
-7. Return a synthesis that clearly separates evidence from inference.
+1. 用一句话复述问题。
+2. 找出最可能给出答案的最小文件集。
+3. 先读直接证据。
+4. 需要时开有边界的并行探索 lane。
+5. 比较相互竞争的解释。
+6. 按支撑强度对解释排序。
+7. 给出一份明确区分证据与推断的综合。
 
-## Output contract
+## 输出契约
 
-Structure the answer so the user can see what is known, what is inferred, and how confident the synthesis is.
+把答复结构化，让用户能看出哪些已知、哪些是推断，以及综合的置信度。
 
 ### Question
-[Restate the user’s question briefly]
+[简短复述用户的问题]
 
 ### Ranked synthesis
 | Rank | Explanation | Confidence | Basis |
 |------|-------------|------------|-------|
-| 1 | ... | High / Medium / Low | strongest supporting evidence |
-| 2 | ... | High / Medium / Low | why it trails |
-| 3 | ... | High / Medium / Low | why it remains possible |
+| 1 | ... | High / Medium / Low | 最强的支撑证据 |
+| 2 | ... | High / Medium / Low | 为什么排次 |
+| 3 | ... | High / Medium / Low | 为什么仍然可能 |
 
 ### Evidence
-- `path/to/file:line-line` — what this artifact directly shows
-- `path/to/file:line-line` — corroborating evidence
+- `path/to/file:line-line` —— 这个工件直接展示了什么
+- `path/to/file:line-line` —— 佐证
 
 ### Inference
-- What the evidence most strongly implies
-- Why weaker alternatives were down-ranked
+- 证据最强烈地暗示了什么
+- 为什么把较弱的备选下排
 
 ### Unknowns / limits
-- What the repository evidence does not establish
-- What would need to be checked next to reduce uncertainty
+- 仓库证据没有确定的事
+- 下一步要查什么才能减少不确定性
 
-## Quality bar
+## 质量基线
 
-A good analyze response is:
-- read-only and question-aligned
-- ranked rather than flat
-- explicit about confidence
-- concrete about file references
-- careful about evidence vs inference
-- free of unsupported speculation
-- free of normative drift or judgmental filler
-- explicit about the evidence-vs-inference distinction
-- concise for simple cases, broader only when the question truly needs it
+一份好的 analyze 答复：
+- 只读且与问题对齐
+- 排序的，而非平铺的
+- 显式声明置信度
+- 文件引用具体
+- 谨慎区分证据与推断
+- 没有未受支持的推测
+- 没有规范性漂移或评判性的废话
+- 显式区分证据与推断
+- 简单情形保持简短，只有当问题真的需要时才扩大范围

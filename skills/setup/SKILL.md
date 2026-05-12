@@ -1,40 +1,40 @@
 ---
 name: setup
-description: Install, refresh, or verify oh-my-kimi on a local Kimi CLI machine.
+description: 在本地 Kimi CLI 机器上安装、刷新或验证 oh-my-kimi。
 argument-hint: "[--no-hooks] [--with-mcp]"
 ---
 
 # Setup
 
-Use this when the user wants oh-my-kimi installed or repaired.
+当用户希望安装或修复 oh-my-kimi 时使用本 skill。
 
-## Commands
+## 命令
 
-From a checkout:
+从 checkout 目录：
 
 ```bash
 bash scripts/install.sh
 ```
 
-Without hooks:
+不安装 hooks：
 
 ```bash
 bash scripts/install.sh --no-hooks
 ```
 
-With recommended MCP setup:
+附带推荐的 MCP 配置：
 
 ```bash
 bash scripts/install.sh --with-mcp
 ```
 
-Uninstall:
+卸载：
 
 ```bash
 bash scripts/uninstall.sh
 ```
 
-## Verify
+## 验证
 
 ```bash
 kimi-omk --version

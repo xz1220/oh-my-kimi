@@ -4,7 +4,7 @@ agent:
   name: planner
   system_prompt_path: ./planner.md
   when_to_use: |
-    Strategic planning consultant with interview workflow
+    带访谈式工作流的战略规划顾问
   allowed_tools:
     - "kimi_cli.tools.shell:Shell"
     - "kimi_cli.tools.file:ReadFile"

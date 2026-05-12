@@ -1,6 +1,6 @@
 ---
 name: plan
-description: Strategic planning with optional interview workflow
+description: 战略性规划，可选搭配访谈工作流
 argument-hint: "[--direct|--consensus|--review] [--interactive] [--deliberate] <task description>"
 pipeline: [deep-interview]
 handoff-policy: approval-required
@@ -9,170 +9,170 @@ level: 4
 ---
 
 <Purpose>
-Plan creates comprehensive, actionable work plans through intelligent interaction. It auto-detects whether to interview the user (broad requests) or plan directly (detailed requests), and supports consensus mode (iterative Planner/Architect/Critic loop with RALPLAN-DR structured deliberation) and review mode (Critic evaluation of existing plans).
+Plan 通过智能交互产出全面、可执行的工作方案。它会自动判断该访谈用户（宽泛请求）还是直接规划（具体请求），并支持共识模式（Planner/Architect/Critic 迭代循环 + RALPLAN-DR 结构化讨论）与 review 模式（Critic 评估既有方案）。
 </Purpose>
 
 <Use_When>
-- User wants to plan before implementing -- "plan this", "plan the", "let's plan"
-- User wants structured requirements gathering for a vague idea
-- User wants an existing plan reviewed -- "review this plan", `--review`
-- User wants multi-perspective consensus on a plan -- `--consensus`, "ralplan"
-- Task is broad or vague and needs scoping before any code is written
+- 用户希望在实现前先规划 —— "plan this"、"plan the"、"let's plan"
+- 用户希望对模糊想法做结构化需求收集
+- 用户希望对已有方案做 review —— "review this plan"、`--review`
+- 用户希望对方案做多视角共识 —— `--consensus`、"ralplan"
+- 任务宽泛或模糊，在写任何代码前需要圈定范围
 </Use_When>
 
 <Do_Not_Use_When>
-- User wants autonomous end-to-end execution -- use `autopilot` instead
-- User wants to start coding immediately with a clear task -- use `ralph` or delegate to executor
-- User asks a simple question that can be answered directly -- just answer it
-- Task is a single focused fix with obvious scope -- use an execution skill instead of running it from this planning module
+- 用户希望端到端自主执行 —— 改用 `autopilot`
+- 用户有清晰任务想立刻动手 —— 用 `ralph` 或委派给 executor
+- 用户问的是可以直接回答的简单问题 —— 直接回答
+- 任务是范围明显的单点修复 —— 用执行 skill 而不是从规划模块跑
 </Do_Not_Use_When>
 
 <Why_This_Exists>
-Jumping into code without understanding requirements leads to rework, scope creep, and missed edge cases. Plan provides structured requirements gathering, expert analysis, and quality-gated plans so that execution starts from a solid foundation. The consensus mode adds multi-perspective validation for high-stakes projects.
+不理解需求就动手会带来返工、范围蔓延与漏掉的边界情况。Plan 提供结构化的需求收集、专家分析与质量门控的方案，让执行从坚实基础起步。共识模式为高风险项目额外引入多视角校验。
 </Why_This_Exists>
 
 <Execution_Policy>
-- Auto-detect interview vs direct mode based on request specificity
-- Ask one question at a time during interviews -- never batch multiple questions
-- Gather codebase facts via `explore` agent before asking the user about them
-- Plans must meet quality standards: 80%+ claims cite file/line, 90%+ criteria are testable
-- Consensus mode runs fully automated by default; add `--interactive` to enable user prompts at draft review and final approval steps
-- Consensus mode uses RALPLAN-DR short mode by default; switch to deliberate mode with `--deliberate` or when the request explicitly signals high risk (auth/security, data migration, destructive/irreversible changes, production incident, compliance/PII, public API breakage)
-- **Planning/execution boundary:** planning modes inspect context and produce plans/specs/proposals only. They MUST mark artifacts as `pending approval` unless the user has explicitly opted into execution in the current turn or via the structured approval UI. Before explicit execution approval, planning modes MUST NOT run mutation-oriented shell commands, edit source files, commit, push, open PRs, invoke execution skills, or delegate implementation tasks.
+- 根据请求具体程度自动判断访谈 vs 直接模式
+- 访谈期间每次只问一个问题 —— 永远不要 batch 多个问题
+- 在向用户提问代码库相关问题之前，通过 `explore` agent 收集事实
+- 方案必须满足质量标准：80%+ 主张引用 file/line、90%+ 验收标准可测试
+- 共识模式默认完全自动；加 `--interactive` 在 draft 评审与终审步骤启用用户提示
+- 共识模式默认走 RALPLAN-DR short；用 `--deliberate` 或请求明显高风险（auth/security、数据迁移、破坏性 / 不可逆改动、生产事故、合规 / PII、公开 API break）时切到 deliberate
+- **规划 / 执行边界：** 规划模式只检视上下文并产出方案 / 规格 / 提案。除非用户在当前轮次或通过结构化审批 UI 显式同意执行，否则**必须**把工件标为 `pending approval`。在显式执行批准之前，规划模式**不得**跑变更性 shell 命令、编辑源文件、commit、push、开 PR、调用执行 skill 或委派实现任务。
 </Execution_Policy>
 
 <Steps>
 
-### Mode Selection
+### 模式选择
 
 | Mode | Trigger | Behavior |
 |------|---------|----------|
-| Interview | Default for broad requests | Interactive requirements gathering |
-| Direct | `--direct`, or detailed request | Skip interview, generate plan directly |
-| Consensus | `--consensus`, "ralplan" | Planner -> Architect -> Critic loop until agreement with RALPLAN-DR structured deliberation (short by default, `--deliberate` for high-risk); add `--interactive` for user prompts at draft and approval steps |
-| Review | `--review`, "review this plan" | Critic evaluation of existing plan |
+| Interview | 宽泛请求的默认 | 交互式需求收集 |
+| Direct | `--direct`，或细节充分的请求 | 跳过访谈，直接生成方案 |
+| Consensus | `--consensus`、"ralplan" | Planner -> Architect -> Critic 循环直到达成共识，使用 RALPLAN-DR 结构化讨论（默认 short，`--deliberate` 走高风险版）；`--interactive` 时在 draft 与审批步骤加上用户提示 |
+| Review | `--review`、"review this plan" | Critic 评估既有方案 |
 
-### Interview Mode (broad/vague requests)
+### Interview 模式（宽泛 / 模糊请求）
 
-1. **Classify the request**: Broad (vague verbs, no specific files, touches 3+ areas) triggers interview mode
-2. **Ask one focused question** using `AskUserQuestion` for preferences, scope, and constraints
-3. **Gather codebase facts first**: Before asking "what patterns does your code use?", spawn an `explore` agent to find out, then ask informed follow-up questions
-4. **Build on answers**: Each question builds on the previous answer
-5. **Consult Analyst** for hidden requirements, edge cases, and risks
-6. **Create plan** when the user signals readiness: "create the plan", "I'm ready", "make it a work plan"
+1. **请求分类**：宽泛（动词模糊、无具体文件、跨 3+ 区域）触发 interview 模式
+2. **每次问一个有针对性的问题**，用 `AskUserQuestion` 收集偏好、范围与约束
+3. **先收集代码库事实**：在问「你代码用什么模式？」之前，派一个 `explore` agent 弄清楚，再问有信息含量的后续问题
+4. **在答案上递进**：每个问题都基于上一个答案
+5. **请教 Analyst**：找出隐藏需求、边界情况与风险
+6. **创建方案**：用户表示就绪时（"create the plan"、"I'm ready"、"make it a work plan"）生成方案
 
-### Direct Mode (detailed requests)
+### Direct 模式（细节充分请求）
 
-1. **Quick Analysis**: Optional brief Analyst consultation
-2. **Create plan**: Generate comprehensive work plan immediately
-3. **Review** (optional): Critic review if requested
+1. **快速分析**：可选的简短 Analyst 咨询
+2. **创建方案**：立刻生成完整工作方案
+3. **Review**（可选）：必要时跑 Critic review
 
-### Consensus Mode (`--consensus` / "ralplan")
+### Consensus 模式（`--consensus` / "ralplan"）
 
-**RALPLAN-DR modes**: **Short** (default, bounded structure) and **Deliberate** (for `--deliberate` or explicit high-risk requests). Both modes keep the same Planner -> Architect -> Critic sequence and the same `AskUserQuestion` gates.
+**RALPLAN-DR 模式：** **Short**（默认，结构受限）与 **Deliberate**（用于 `--deliberate` 或明示高风险请求）。两种模式都保留同样的 Planner -> Architect -> Critic 序列与同样的 `AskUserQuestion` 闸门。
 
-**Provider overrides (supported when the provider CLI is installed):**
-- `--architect codex` — replace the Claude Architect pass with `omk ask codex --agent-prompt architect "..."` for implementation-heavy architecture review
-- `--critic codex` — replace the Claude Critic pass with `omk ask codex --agent-prompt critic "..."` for an external review pass before execution
-- If the requested provider is unavailable, briefly note that and continue with the default Claude Architect/Critic step for that stage
+**Provider 覆盖（provider CLI 已安装时受支持）：**
+- `--architect codex` —— 把 Claude Architect pass 替换为 `omk ask codex --agent-prompt architect "..."`，做面向实现的架构审查
+- `--critic codex` —— 把 Claude Critic pass 替换为 `omk ask codex --agent-prompt critic "..."`，在执行前再加一次外部审查
+- 如果指定的 provider 不可用，简短说明并继续用该阶段的默认 Claude Architect/Critic 步骤
 
-**State lifecycle**: The persistent-mode stop hook uses `ralplan-state.json` to enforce continuation during the consensus loop. The skill **MUST** manage this state:
-- **On entry**: Call `state_write(mode="ralplan", active=true, session_id=<current_session_id>)` before step 1
-- **On handoff to execution** (approval → ralph/team): Call `state_write(mode="ralplan", active=false, session_id=<current_session_id>)`. Do NOT use `state_clear` here — `state_clear` writes a 30-second cancel signal that disables stop-hook enforcement for ALL modes, leaving the newly launched execution mode unprotected.
-- **On true terminal exit** (rejection, non-interactive plan output, error/abort): Call `state_clear(mode="ralplan", session_id=<current_session_id>)` — no execution mode follows, so the cancel signal window is harmless.
-- Do NOT clear during intermediate steps like Critic approval or max-iteration presentation, as the user may still select "Request changes".
+**状态生命周期：** persistent-mode 的 stop hook 用 `ralplan-state.json` 在共识循环期间强制继续。skill **必须**管好这份状态：
+- **进入时**：步骤 1 之前调 `state_write(mode="ralplan", active=true, session_id=<current_session_id>)`
+- **交接到执行时**（approval → ralph/team）：调 `state_write(mode="ralplan", active=false, session_id=<current_session_id>)`。这里**不要**用 `state_clear` —— `state_clear` 会写一个 30 秒的取消信号，使所有模式的 stop-hook 强制都失效，让刚启动的执行模式失去保护。
+- **真正的终态退出**（拒绝、非交互式方案输出、错误 / abort）：调 `state_clear(mode="ralplan", session_id=<current_session_id>)` —— 无后续执行模式，取消信号窗口无害。
+- 中间步骤（如 Critic 通过、达到最大迭代数的展示）**不要**清理状态，因为用户仍可能选择 "Request changes"。
 
-Without cleanup, the stop hook blocks all subsequent stops with `[RALPLAN - CONSENSUS PLANNING]` reinforcement messages even after the consensus workflow has finished. Always pass `session_id` to avoid clearing other concurrent sessions' state.
+不做清理时，stop hook 会在共识工作流结束后仍用 `[RALPLAN - CONSENSUS PLANNING]` 强化消息阻塞所有后续 stop。始终传 `session_id`，避免清掉其他并发会话的状态。
 
-1. **Planner** creates initial plan and a compact **RALPLAN-DR summary** before any Architect review. The summary **MUST** include:
-   - **Principles** (3-5)
-   - **Decision Drivers** (top 3)
-   - **Viable Options** (>=2) with bounded pros/cons for each option
-   - If only one viable option remains, an explicit **invalidation rationale** for the alternatives that were rejected
-   - In **deliberate mode**: a **pre-mortem** (3 failure scenarios) and an **expanded test plan** covering **unit / integration / e2e / observability**
-2. **User feedback** *(--interactive only)*: If running with `--interactive`, **MUST** use `AskUserQuestion` to present the draft plan **plus the RALPLAN-DR Principles / Decision Drivers / Options summary for early direction alignment** with these options:
-   - **Proceed to review** — send to Architect and Critic for evaluation
-   - **Request changes** — return to step 1 with user feedback incorporated
-   - **Skip review** — go directly to final approval (step 7)
-   If NOT running with `--interactive`, automatically proceed to review (step 3).
-3. **Architect** reviews for architectural soundness using `Agent(subagent_type="oh-my-kimi:architect", ...)`. Architect review **MUST** include: strongest steelman counterargument (antithesis) against the favored option, at least one meaningful tradeoff tension, and (when possible) a synthesis path. In deliberate mode, Architect should explicitly flag principle violations. **Wait for this step to complete before proceeding to step 4.** Do NOT run steps 3 and 4 in parallel.
-4. **Critic** evaluates against quality criteria using `Agent(subagent_type="oh-my-kimi:critic", ...)`. Critic **MUST** verify principle-option consistency, fair alternative exploration, risk mitigation clarity, testable acceptance criteria, and concrete verification steps. Critic **MUST** explicitly reject shallow alternatives, driver contradictions, vague risks, or weak verification. In deliberate mode, Critic **MUST** reject missing/weak pre-mortem or missing/weak expanded test plan. Run only after step 3 is complete.
-5. **Re-review loop** (max 5 iterations): If Critic rejects, execute this closed loop:
-   a. Collect all rejection feedback from Architect + Critic
-   b. Pass feedback to Planner to produce a revised plan
-   c. **Return to Step 3** — Architect reviews the revised plan
-   d. **Return to Step 4** — Critic evaluates the revised plan
-   e. Repeat until Critic approves OR max 5 iterations reached
-   f. If max iterations reached without approval, present the best version to user via `AskUserQuestion` with note that expert consensus was not reached
-6. **Apply improvements**: When reviewers approve with improvement suggestions, merge all accepted improvements into the plan file before proceeding. Final consensus output **MUST** include an **ADR** section with: **Decision**, **Drivers**, **Alternatives considered**, **Why chosen**, **Consequences**, **Follow-ups**. Specifically:
-   a. Collect all improvement suggestions from Architect and Critic responses
-   b. Deduplicate and categorize the suggestions
-   c. Update the plan file in `.omk/plans/` with the accepted improvements (add missing details, refine steps, strengthen acceptance criteria, ADR updates, etc.)
-   d. Note which improvements were applied in a brief changelog section at the end of the plan
-7. On Critic approval (with improvements applied): mark the plan status as `pending approval` unless explicit execution approval has already been captured. *(--interactive only)* If running with `--interactive`, use `AskUserQuestion` to present the plan with these options:
-   - **Approve execution via team** (Recommended) — explicit opt-in to proceed via coordinated parallel team agents (`/team`). Team is the canonical orchestration surface since v4.1.7.
-   - **Approve execution via ralph** — explicit opt-in to proceed via ralph+ultrawork (sequential execution with verification)
-   - **Approve execution after clearing context** — explicit opt-in to compact the context window first (recommended when context is large after planning), then start fresh implementation via ralph with the saved plan file
-   - **Request changes** — return to step 1 with user feedback
-   - **Reject** — discard the plan entirely
-   If NOT running with `--interactive`, output the final plan marked `pending approval`, call `state_clear(mode="ralplan", session_id=<current_session_id>)`, and stop. Do NOT auto-execute.
-8. *(--interactive only)* User chooses via the structured `AskUserQuestion` UI (never ask for approval in plain text). If user selects **Reject**, call `state_clear(mode="ralplan", session_id=<current_session_id>)` and stop.
-9. On user approval (--interactive only): Call `state_write(mode="ralplan", active=false, session_id=<current_session_id>)` **before** invoking the execution skill (ralph/team), so the stop hook does not interfere with the execution mode's own enforcement. Do NOT use `state_clear` here — it writes a cancel signal that disables enforcement for the newly launched mode.
-   - **Approve execution via team**: **MUST** invoke `Skill("oh-my-kimi:team")` with the approved plan path from `.omk/plans/` as context. Do NOT implement directly. The team skill coordinates parallel agents across the staged pipeline for faster execution on large tasks. This is the recommended default execution path.
-   - **Approve execution via ralph**: **MUST** invoke `Skill("oh-my-kimi:ralph")` with the approved plan path from `.omk/plans/` as context. Do NOT implement directly. Do NOT edit source code files in the planning agent. The ralph skill handles execution via ultrawork parallel agents.
-   - **Approve execution after clearing context**: First invoke `Skill("compact")` to compress the context window (reduces token usage accumulated during planning), then invoke `Skill("oh-my-kimi:ralph")` with the approved plan path from `.omk/plans/`. This path is recommended when the context window is 50%+ full after the planning session.
+1. **Planner** 在任何 Architect 评审之前先创建初始方案与一份紧凑的 **RALPLAN-DR summary**。该 summary **必须**含：
+   - **Principles**（3-5 条）
+   - **Decision Drivers**（最关键 3 条）
+   - **Viable Options**（>=2 个）并对每个备选给出有边界的 pros/cons
+   - 若仅剩一个 viable option，给出被拒备选的显式 **invalidation rationale**
+   - **deliberate 模式**：含 **pre-mortem**（3 个失败场景）与覆盖 **unit / integration / e2e / observability** 的 **expanded test plan**
+2. **用户反馈** *(仅 --interactive)*：用 `--interactive` 时**必须**用 `AskUserQuestion` 把 draft 方案 **加上 RALPLAN-DR Principles / Decision Drivers / Options summary** 一起呈现以便方向对齐，选项如下：
+   - **Proceed to review** —— 交给 Architect 与 Critic 评估
+   - **Request changes** —— 回步骤 1，把用户反馈纳入
+   - **Skip review** —— 直接到终审（步骤 7）
+   未使用 `--interactive` 时自动进入评审（步骤 3）。
+3. **Architect** 用 `Agent(subagent_type="oh-my-kimi:architect", ...)` 做架构稳健性评审。Architect 评审**必须**包含：针对所选方案最强的 steelman 反驳（antithesis）、至少一条有意义的取舍张力，以及（可能时）一条 synthesis 路径。deliberate 模式下，Architect 应显式标出原则违例。**等本步完成后再进入步骤 4。** 不要让步骤 3 与 4 并行。
+4. **Critic** 用 `Agent(subagent_type="oh-my-kimi:critic", ...)` 按质量标准评估。Critic **必须**校验原则—选项一致性、备选探索是否充分、风险缓解清晰度、可测试验收标准与具体验证步骤。Critic **必须**显式驳回浅薄备选、drivers 自相矛盾、模糊风险或薄弱验证。deliberate 模式下，Critic **必须**驳回缺失 / 弱 pre-mortem 或缺失 / 弱扩展测试计划。只有步骤 3 完成后才跑。
+5. **再评审循环**（最多 5 次迭代）：Critic 驳回时，执行这条闭环：
+   a. 收集 Architect + Critic 的全部驳回反馈
+   b. 把反馈交给 Planner 出修订方案
+   c. **回步骤 3** —— Architect 评审修订方案
+   d. **回步骤 4** —— Critic 评估修订方案
+   e. 重复直到 Critic 通过或达 5 次上限
+   f. 达到上限仍未通过时，通过 `AskUserQuestion` 把最好版本呈现给用户，并标注未达成专家共识
+6. **应用改进**：评审者通过且附带改进建议时，在进入下一步前把所有被接受的改进合入方案文件。共识最终输出**必须**含 **ADR** 段：**Decision**、**Drivers**、**Alternatives considered**、**Why chosen**、**Consequences**、**Follow-ups**。具体：
+   a. 收集 Architect 与 Critic 回复里的所有改进建议
+   b. 去重与归类
+   c. 用接受的改进更新 `.omk/plans/` 中的方案文件（补缺失细节、精化步骤、强化验收标准、ADR 更新等）
+   d. 在方案末尾的简短 changelog 段记录哪些改进被应用
+7. Critic 通过（且已应用改进）后：除非已经记录显式执行批准，否则把方案状态标为 `pending approval`。*(仅 --interactive)* 用 `--interactive` 时用 `AskUserQuestion` 呈现方案，选项如下：
+   - **Approve execution via team**（推荐）—— 显式同意通过协同并行 team agent（`/team`）推进。自 v4.1.7 起 team 是权威编排接口。
+   - **Approve execution via ralph** —— 显式同意通过 ralph+ultrawork 推进（带验证的顺序执行）
+   - **Approve execution after clearing context** —— 显式同意先压缩上下文窗口（规划后上下文大时推荐），再用保存的方案文件通过 ralph 重新启动实现
+   - **Request changes** —— 回步骤 1，带上用户反馈
+   - **Reject** —— 整份方案丢弃
+   未使用 `--interactive` 时，输出标为 `pending approval` 的最终方案，调 `state_clear(mode="ralplan", session_id=<current_session_id>)`，然后停。**不要**自动执行。
+8. *(仅 --interactive)* 用户通过结构化 `AskUserQuestion` UI 选择（永远不要在纯文本里问审批）。用户选 **Reject** 时调 `state_clear(mode="ralplan", session_id=<current_session_id>)` 并停下。
+9. 用户批准时（仅 --interactive）：在调用执行 skill（ralph/team）**之前**调 `state_write(mode="ralplan", active=false, session_id=<current_session_id>)`，让 stop hook 不去干扰执行模式自身的强制。这里**不要**用 `state_clear` —— 它写的取消信号会让刚启动的模式失去强制。
+   - **Approve execution via team**：**必须**用 `.omk/plans/` 下被批准的方案路径作为上下文调用 `Skill("oh-my-kimi:team")`。不要直接实现。team skill 跨分阶段 pipeline 协同并行 agent，对大任务执行更快。这是推荐的默认执行路径。
+   - **Approve execution via ralph**：**必须**用 `.omk/plans/` 下被批准的方案路径作为上下文调用 `Skill("oh-my-kimi:ralph")`。不要直接实现。规划 agent 内不要编辑源代码。ralph skill 通过 ultrawork 并行 agent 处理执行。
+   - **Approve execution after clearing context**：先调 `Skill("compact")` 压缩上下文（减小规划期间累积的 token 用量），再用 `.omk/plans/` 下批准的方案路径调 `Skill("oh-my-kimi:ralph")`。当规划会话结束时上下文窗口已用 50%+ 时推荐这条路径。
 
-### Review Mode (`--review`)
+### Review 模式（`--review`）
 
-1. Read plan file from `.omk/plans/`
-2. Evaluate via Critic using `Agent(subagent_type="oh-my-kimi:critic", ...)`
-3. Return verdict: APPROVED, REVISE (with specific feedback), or REJECT (replanning required)
+1. 从 `.omk/plans/` 读方案文件
+2. 用 `Agent(subagent_type="oh-my-kimi:critic", ...)` 经 Critic 评估
+3. 返回结论：APPROVED、REVISE（带具体反馈）或 REJECT（需要重新规划）
 
-### Plan Output Format
+### 方案输出格式
 
-Every plan includes:
+每份方案包含：
 - Requirements Summary
-- Acceptance Criteria (testable)
-- Implementation Steps (with file references)
+- Acceptance Criteria（可测试）
+- Implementation Steps（含文件引用）
 - Risks and Mitigations
 - Verification Steps
-- For consensus/ralplan: **RALPLAN-DR summary** (Principles, Decision Drivers, Options)
-- For consensus/ralplan final output: **ADR** (Decision, Drivers, Alternatives considered, Why chosen, Consequences, Follow-ups)
-- For deliberate consensus mode: **Pre-mortem (3 scenarios)** and **Expanded Test Plan** (unit/integration/e2e/observability)
+- 共识 / ralplan：**RALPLAN-DR summary**（Principles、Decision Drivers、Options）
+- 共识 / ralplan 最终输出：**ADR**（Decision、Drivers、Alternatives considered、Why chosen、Consequences、Follow-ups）
+- deliberate 共识模式：**Pre-mortem（3 个场景）** 与 **Expanded Test Plan**（unit/integration/e2e/observability）
 
-Plans are saved to `.omk/plans/`. Drafts go to `.omk/drafts/`.
+方案保存到 `.omk/plans/`。Draft 放到 `.omk/drafts/`。
 </Steps>
 
 <Tool_Usage>
-- Use `AskUserQuestion` for preference questions (scope, priority, timeline, risk tolerance) -- provides clickable UI
-- Use plain text for questions needing specific values (port numbers, names, follow-up clarifications)
-- Use `explore` agent (Haiku, 30s timeout) to gather codebase facts before asking the user
-- Use `Agent(subagent_type="oh-my-kimi:planner", ...)` for planning validation on large-scope plans
-- Use `Agent(subagent_type="oh-my-kimi:analyst", ...)` for requirements analysis
-- Use `Agent(subagent_type="oh-my-kimi:critic", ...)` for plan review in consensus and review modes
-- **CRITICAL — Consensus mode agent calls MUST be sequential, never parallel.** Always await the Architect Task result before issuing the Critic Task.
-- In consensus mode, default to RALPLAN-DR short mode; enable deliberate mode on `--deliberate` or explicit high-risk signals (auth/security, migrations, destructive changes, production incidents, compliance/PII, public API breakage)
-- In consensus mode with `--interactive`: use `AskUserQuestion` for the user feedback step (step 2) and the final approval step (step 7) -- never ask for approval in plain text. Without `--interactive`, skip both prompts, mark the plan `pending approval`, output the final plan, and stop.
-- In consensus mode with `--interactive`, on explicit user approval **MUST** invoke `Skill("oh-my-kimi:ralph")` or `Skill("oh-my-kimi:team")` for execution (step 9) -- never implement directly in the planning agent
-- Before explicit execution approval, planning mode MUST NOT run mutation-oriented shell commands, edit files, commit, push, open PRs, invoke execution skills, or delegate implementation tasks; it may only inspect context and draft/update plan/spec/proposal artifacts.
-- When user selects "Approve execution after clearing context" in step 7 (--interactive only): call `state_write(mode="ralplan", active=false, session_id=<current_session_id>)` first, then invoke `Skill("compact")` to compress the accumulated planning context, then immediately invoke `Skill("oh-my-kimi:ralph")` with the plan path -- the compact step is critical to free up context before the implementation loop begins
-- **CRITICAL — Consensus mode state lifecycle**: Always deactivate ralplan state before stopping or handing off to execution. Use `state_write(active=false)` for handoff paths (approval → ralph/team) and `state_clear` for true terminal exits (rejection, error). Never use `state_clear` before launching an execution mode — its cancel signal disables stop-hook enforcement for 30 seconds.
+- 偏好类问题（范围、优先级、时间表、风险容忍度）用 `AskUserQuestion` —— 给出可点击 UI
+- 需要具体值的问题（端口号、命名、追问澄清）用纯文本
+- 用 `explore` agent（Haiku，30s 超时）在向用户提问前先收集代码库事实
+- 对大范围方案用 `Agent(subagent_type="oh-my-kimi:planner", ...)` 做规划校验
+- 用 `Agent(subagent_type="oh-my-kimi:analyst", ...)` 做需求分析
+- 共识与 review 模式下用 `Agent(subagent_type="oh-my-kimi:critic", ...)` 做方案评审
+- **CRITICAL —— 共识模式下 agent 调用必须串行，绝不并行。** 始终等 Architect Task 结果后再发 Critic Task。
+- 共识模式默认 RALPLAN-DR short；`--deliberate` 或明示高风险信号（auth/security、迁移、破坏性改动、生产事故、合规 / PII、公开 API break）时启用 deliberate
+- 共识模式 + `--interactive`：用户反馈步骤（步骤 2）与终审步骤（步骤 7）用 `AskUserQuestion` —— 永远不要在纯文本里求审批。未启用 `--interactive` 时跳过这两个 prompt、把方案标为 `pending approval`、输出最终方案并停下。
+- 共识模式 + `--interactive`，用户显式批准后**必须**通过 `Skill("oh-my-kimi:ralph")` 或 `Skill("oh-my-kimi:team")` 执行（步骤 9）—— 规划 agent 内绝不直接实现
+- 在显式执行批准之前，规划模式**不得**跑变更性 shell 命令、编辑文件、commit、push、开 PR、调用执行 skill 或委派实现任务；只能检视上下文并起草 / 更新方案 / 规格 / 提案工件。
+- 当用户在步骤 7（仅 --interactive）选 "Approve execution after clearing context"：先调 `state_write(mode="ralplan", active=false, session_id=<current_session_id>)`，再调 `Skill("compact")` 压缩累积的规划上下文，然后立即用方案路径调 `Skill("oh-my-kimi:ralph")` —— compact 步骤至关重要，能在实现循环开始前腾出上下文
+- **CRITICAL —— 共识模式状态生命周期**：在每个退出路径前都把 ralplan 状态置为非活跃。交接执行路径（approval → ralph/team）用 `state_write(active=false)`，真正终态退出（rejection、error）用 `state_clear`。在启动执行模式之前**绝不**用 `state_clear` —— 它的取消信号会让 stop-hook 强制失效 30 秒。
 </Tool_Usage>
 
 <Examples>
 <Good>
-Adaptive interview (gathering facts before asking):
+自适应访谈（先收集事实再提问）：
 ```
 Planner: [spawns explore agent: "find authentication implementation"]
 Planner: [receives: "Auth is in src/auth/ using JWT with passport.js"]
 Planner: "I see you're using JWT authentication with passport.js in src/auth/.
          For this new feature, should we extend the existing auth or add a separate auth flow?"
 ```
-Why good: Answers its own codebase question first, then asks an informed preference question.
+为什么好：先自答了代码库相关问题，再问有信息含量的偏好问题。
 </Good>
 
 <Good>
-Single question at a time:
+每次只问一个问题：
 ```
 Q1: "What's the main goal?"
 A1: "Improve performance"
@@ -180,69 +180,69 @@ Q2: "For performance, what matters more -- latency or throughput?"
 A2: "Latency"
 Q3: "For latency, are we optimizing for p50 or p99?"
 ```
-Why good: Each question builds on the previous answer. Focused and progressive.
+为什么好：每个问题在上一个答案上递进。聚焦、渐进。
 </Good>
 
 <Bad>
-Asking about things you could look up:
+追问能自己查到的事：
 ```
 Planner: "Where is authentication implemented in your codebase?"
 User: "Uh, somewhere in src/auth I think?"
 ```
-Why bad: The planner should spawn an explore agent to find this, not ask the user.
+为什么差：planner 应该派 explore agent 自己找到，而不是问用户。
 </Bad>
 
 <Bad>
-Batching multiple questions:
+batch 多个问题：
 ```
 "What's the scope? And the timeline? And who's the audience?"
 ```
-Why bad: Three questions at once causes shallow answers. Ask one at a time.
+为什么差：一次三个问题导致浅层答复。每次一个。
 </Bad>
 
 <Bad>
-Presenting all design options at once:
+一次性把所有设计选项摆出来：
 ```
 "Here are 4 approaches: Option A... Option B... Option C... Option D... Which do you prefer?"
 ```
-Why bad: Decision fatigue. Present one option with trade-offs, get reaction, then present the next.
+为什么差：决策疲劳。一次呈现一个选项 + 取舍，收到反应再上下一个。
 </Bad>
 </Examples>
 
 <Escalation_And_Stop_Conditions>
-- Stop interviewing when requirements are clear enough to plan -- do not over-interview
-- In consensus mode, stop after 5 Planner/Architect/Critic iterations and present the best version. Do NOT clear ralplan state here — the user may still select "Request changes" in the subsequent step. State is cleared only on the user's final choice (approval/rejection) or when outputting the plan in non-interactive mode.
-- Consensus mode without `--interactive` outputs the final plan marked `pending approval` and stops; with `--interactive`, requires explicit user approval before any implementation begins. **Always** call `state_clear(mode="ralplan", session_id=<current_session_id>)` before stopping.
-- If the user says "just do it" or "skip planning" without explicitly naming an execution path, treat it as a request to end planning: output the current plan/spec/proposal as `pending approval` and ask for explicit execution approval via the structured approval UI. Do NOT invoke `Skill("oh-my-kimi:ralph")`, mutate files, delegate implementation, commit, push, or open a PR from the planning module until that approval exists.
-- Escalate to the user when there are irreconcilable trade-offs that require a business decision
+- 需求清楚到可以规划时就停止访谈 —— 不要过度访谈
+- 共识模式在 5 轮 Planner/Architect/Critic 迭代后停下，呈现最好版本。**不要**在这里清理 ralplan 状态 —— 用户仍可能在后续选 "Request changes"。状态只在用户的最终选择（approval/rejection）或非交互式输出方案时清理。
+- 未带 `--interactive` 的共识模式输出标为 `pending approval` 的最终方案后停下；带 `--interactive` 时，在任何实现开始之前都需要用户显式批准。**始终**在停下前调 `state_clear(mode="ralplan", session_id=<current_session_id>)`。
+- 如果用户说 "just do it" 或 "skip planning" 而没有显式给出执行路径，把它当作结束规划的请求：输出当前方案 / 规格 / 提案作为 `pending approval`，并通过结构化审批 UI 请求显式执行批准。在批准存在之前，**不要**从规划模块调用 `Skill("oh-my-kimi:ralph")`、变更文件、委派实现、commit、push 或开 PR。
+- 当存在需要业务决策的不可调和取舍时，升级给用户
 </Escalation_And_Stop_Conditions>
 
 <Final_Checklist>
-- [ ] Plan has testable acceptance criteria (90%+ concrete)
-- [ ] Plan references specific files/lines where applicable (80%+ claims)
-- [ ] All risks have mitigations identified
-- [ ] No vague terms without metrics ("fast" -> "p99 < 200ms")
-- [ ] Plan saved to `.omk/plans/`
-- [ ] In consensus mode: RALPLAN-DR summary includes 3-5 principles, top 3 drivers, and >=2 viable options (or explicit invalidation rationale)
-- [ ] In consensus mode final output: ADR section included (Decision / Drivers / Alternatives considered / Why chosen / Consequences / Follow-ups)
-- [ ] In deliberate consensus mode: pre-mortem (3 scenarios) + expanded test plan (unit/integration/e2e/observability) included
-- [ ] In consensus mode with `--interactive`: user explicitly approved before any execution; without `--interactive`: plan output marked `pending approval` only, no auto-execution
-- [ ] In consensus mode: ralplan state deactivated on every exit path — `state_write(active=false)` for handoff to execution, `state_clear` for terminal exits (rejection, error, non-interactive stop)
+- [ ] 方案有可测试的验收标准（90%+ 具体）
+- [ ] 方案在适用处引用具体文件 / 行（80%+ 主张）
+- [ ] 所有风险都识别了缓解
+- [ ] 没有未带指标的模糊用语（"fast" -> "p99 < 200ms"）
+- [ ] 方案保存到 `.omk/plans/`
+- [ ] 共识模式：RALPLAN-DR summary 含 3-5 条原则、最关键 3 条 drivers、>=2 个 viable options（或显式 invalidation rationale）
+- [ ] 共识模式最终输出：含 ADR 段（Decision / Drivers / Alternatives considered / Why chosen / Consequences / Follow-ups）
+- [ ] deliberate 共识模式：含 pre-mortem（3 个场景）+ 扩展测试计划（unit/integration/e2e/observability）
+- [ ] 共识模式 + `--interactive`：任何执行前用户都显式批准；未带 `--interactive`：方案输出仅标 `pending approval`，无自动执行
+- [ ] 共识模式：每条退出路径都把 ralplan 状态置为非活跃 —— 交接执行用 `state_write(active=false)`，终态退出（rejection、error、非交互停止）用 `state_clear`
 </Final_Checklist>
 
 <Advanced>
-## Design Option Presentation
+## 设计选项呈现
 
-When presenting design choices during interviews, chunk them:
+访谈中呈现设计选择时，分块给出：
 
-1. **Overview** (2-3 sentences)
-2. **Option A** with trade-offs
-3. [Wait for user reaction]
-4. **Option B** with trade-offs
-5. [Wait for user reaction]
-6. **Recommendation** (only after options discussed)
+1. **概述**（2-3 句）
+2. **Option A** 含取舍
+3. [等用户反应]
+4. **Option B** 含取舍
+5. [等用户反应]
+6. **推荐**（只有在选项讨论后给出）
 
-Format for each option:
+每个选项格式：
 ```
 ### Option A: [Name]
 **Approach:** [1 sentence]
@@ -252,27 +252,27 @@ Format for each option:
 What's your reaction to this approach?
 ```
 
-## Question Classification
+## 问题分类
 
-Before asking any interview question, classify it:
+问任何访谈问题前先分类：
 
 | Type | Examples | Action |
 |------|----------|--------|
-| Codebase Fact | "What patterns exist?", "Where is X?" | Explore first, do not ask user |
-| User Preference | "Priority?", "Timeline?" | Ask user via AskUserQuestion |
-| Scope Decision | "Include feature Y?" | Ask user |
-| Requirement | "Performance constraints?" | Ask user |
+| Codebase Fact | "What patterns exist?"、"Where is X?" | 先 explore，不要问用户 |
+| User Preference | "Priority?"、"Timeline?" | 通过 AskUserQuestion 问用户 |
+| Scope Decision | "Include feature Y?" | 问用户 |
+| Requirement | "Performance constraints?" | 问用户 |
 
-## Review Quality Criteria
+## 评审质量标准
 
 | Criterion | Standard |
 |-----------|----------|
-| Clarity | 80%+ claims cite file/line |
-| Testability | 90%+ criteria are concrete |
-| Verification | All file refs exist |
-| Specificity | No vague terms |
+| Clarity | 80%+ 主张引用 file/line |
+| Testability | 90%+ 标准具体 |
+| Verification | 所有文件引用均存在 |
+| Specificity | 无模糊用语 |
 
-## Deprecation Notice
+## 弃用提示
 
-The separate `/planner`, `/ralplan`, and `/review` skills have been merged into `/plan`. All workflows (interview, direct, consensus, review) are available through `/plan`.
+独立的 `/planner`、`/ralplan`、`/review` skill 已并入 `/plan`。所有工作流（interview、direct、consensus、review）都通过 `/plan` 提供。
 </Advanced>

@@ -1,71 +1,71 @@
 ---
 name: code-review
-description: Run a comprehensive code review
+description: 跑一次全面的代码评审
 ---
 
 # Code Review Skill
 
-Conduct a thorough code review for quality, security, and maintainability with severity-rated feedback.
+带严重程度评级地做一次质量、安全、可维护性的彻底代码评审。
 
-## When to Use
+## 何时使用
 
-This skill activates when:
-- User requests "review this code", "code review"
-- Before merging a pull request
-- After implementing a major feature
-- User wants quality assessment
+下列情形触发该 skill：
+- 用户说 "review this code"、"code review"
+- 合并 PR 之前
+- 实现完一个大功能之后
+- 用户想要质量评估
 
-## GPT-5.5 Guidance Alignment
+## GPT-5.5 指引对齐
 
-- Default to outcome-first progress and completion reporting: state the target result, evidence, validation status, and stop condition before adding process detail.
-- Treat newer user task updates as local overrides for the active workflow branch while preserving earlier non-conflicting constraints.
-- If correctness depends on additional inspection, retrieval, execution, or verification, keep using the relevant tools until the review is grounded; stop once enough evidence exists.
-- Continue through clear, low-risk, reversible next steps automatically; ask only when the next step is materially branching, destructive, credentialed, external-production, or preference-dependent.
+- 默认采取「outcome-first」的推进与完成汇报：先给出目标结果、证据、校验状态与停止条件，再补流程细节。
+- 把用户的新任务更新当作当前工作流分支的本地覆盖，同时保留此前不冲突的约束。
+- 如果正确性依赖更多检查、检索、执行或校验，就持续使用相关工具，直到评审有据可依；证据足够时就停。
+- 对清晰、低风险、可逆的下一步自动推进；只有当下一步会带来实质分支、有破坏性、需要凭证、对接外部生产或依赖偏好时才询问。
 
-Delegates to the `code-reviewer` and `architect` agents in parallel for a two-lane review:
+并行委派给 `code-reviewer` 与 `architect` 两条 lane 做双线评审：
 
-1. **Identify Changes**
-   - Run `git diff` to find changed files
-   - Determine scope of review (specific files or entire PR)
+1. **识别变更**
+   - 跑 `git diff` 找出变更文件
+   - 确定评审范围（特定文件或整个 PR）
 
-2. **Launch Parallel Review Lanes**
-   - **`code-reviewer` lane** - owns spec compliance, security, code quality, performance, and maintainability findings
-   - **`architect` lane** - owns the devil's-advocate / design-tradeoff perspective
-   - Both lanes run in parallel and produce distinct outputs before final synthesis
+2. **启动并行评审 lane**
+   - **`code-reviewer` lane** —— 负责规格符合、安全、代码质量、性能、可维护性方面的发现
+   - **`architect` lane** —— 负责 devil's-advocate / 设计权衡视角
+   - 两条 lane 并行跑，在最终综合之前各自产出独立结果
 
-3. **Review Categories**
-   - **Security** - Hardcoded secrets, injection risks, XSS, CSRF
-   - **Code Quality** - Function size, complexity, nesting depth
-   - **Performance** - Algorithm efficiency, N+1 queries, caching
-   - **Best Practices** - Naming, documentation, error handling
-   - **Maintainability** - Duplication, coupling, testability
+3. **评审类别**
+   - **Security** —— 硬编码 secret、注入风险、XSS、CSRF
+   - **Code Quality** —— 函数大小、复杂度、嵌套深度
+   - **Performance** —— 算法效率、N+1 查询、缓存
+   - **Best Practices** —— 命名、文档、错误处理
+   - **Maintainability** —— 重复、耦合、可测性
 
-4. **Severity Rating**
-   - **CRITICAL** - Security vulnerability (must fix before merge)
-   - **HIGH** - Bug or major code smell (should fix before merge)
-   - **MEDIUM** - Minor issue (fix when possible)
-   - **LOW** - Style/suggestion (consider fixing)
+4. **严重程度评级**
+   - **CRITICAL** —— 安全漏洞（合并前必须修）
+   - **HIGH** —— bug 或重大代码 smell（合并前应修）
+   - **MEDIUM** —— 较小问题（有空就修）
+   - **LOW** —— 风格 / 建议（看情况修）
 
-5. **Architectural Status Contract**
-   - **CLEAR** - No unresolved architectural blocker was found
-   - **WATCH** - Non-blocking design/tradeoff concern that must appear in the final synthesis
-   - **BLOCK** - Unresolved design concern that prevents a merge-ready verdict
+5. **架构状态契约**
+   - **CLEAR** —— 未发现未解决的架构性阻塞
+   - **WATCH** —— 非阻塞的设计 / 权衡顾虑，必须出现在最终综合里
+   - **BLOCK** —— 未解决的设计顾虑，阻止给出可合并结论
 
-6. **Specific Recommendations**
-   - File:line locations for each issue
-   - Concrete fix suggestions
-   - Code examples where applicable
+6. **具体建议**
+   - 每条问题给出 file:line 定位
+   - 给出具体修复建议
+   - 适用时给代码示例
 
-7. **Final Synthesis**
-   - Combine the `code-reviewer` recommendation and the architect status into one final verdict
-   - Deterministic merge gating rules:
-     - If architect status is **BLOCK**, final recommendation is **REQUEST CHANGES**
-     - Else if `code-reviewer` recommendation is **REQUEST CHANGES**, final recommendation is **REQUEST CHANGES**
-     - Else if architect status is **WATCH**, final recommendation is **COMMENT**
-     - Else final recommendation follows the `code-reviewer` lane
-   - The final report must make architect blockers impossible to miss
+7. **最终综合**
+   - 把 `code-reviewer` 的建议与 architect 状态合成一条最终结论
+   - 确定性的合并闸门规则：
+     - 若 architect 状态为 **BLOCK**，最终建议为 **REQUEST CHANGES**
+     - 否则若 `code-reviewer` 建议为 **REQUEST CHANGES**，最终建议为 **REQUEST CHANGES**
+     - 否则若 architect 状态为 **WATCH**，最终建议为 **COMMENT**
+     - 否则最终建议跟随 `code-reviewer` lane
+   - 最终报告必须让 architect blocker 一眼可见
 
-## Agent Delegation
+## Agent 委派
 
 ```
 delegate(
@@ -118,32 +118,32 @@ Output:
 Run both lanes in parallel, then synthesize them with the deterministic rules above.
 ```
 
-## External Model Consultation (Preferred)
+## 外部模型咨询（建议）
 
-The code-reviewer agent SHOULD consult Codex for cross-validation.
+code-reviewer agent 应当咨询 Codex 做交叉验证。
 
-### Protocol
-1. **Form your OWN review FIRST** - Complete the review independently
-2. **Consult for validation** - Cross-check findings with Codex
-3. **Critically evaluate** - Never blindly adopt external findings
-4. **Graceful fallback** - Never block if tools unavailable
+### 协议
+1. **先形成自己的评审** —— 独立完成一次评审
+2. **咨询以做验证** —— 用 Codex 交叉核对发现
+3. **批判性评估** —— 永远不要盲目采纳外部发现
+4. **优雅回退** —— 工具不可用时绝不阻塞
 
-### When to Consult
-- Security-sensitive code changes
-- Complex architectural patterns
-- Unfamiliar codebases or languages
-- High-stakes production code
+### 何时咨询
+- 安全敏感的代码改动
+- 复杂的架构模式
+- 不熟悉的代码库或语言
+- 高风险的生产代码
 
-### When to Skip
-- Simple refactoring
-- Well-understood patterns
-- Time-critical reviews
-- Small, isolated changes
+### 何时跳过
+- 简单重构
+- 已经熟悉的模式
+- 时效紧迫的评审
+- 小且孤立的改动
 
-### Tool Usage
-Prefer native `code-reviewer` agent consultation or CLI-backed `ask_codex` surfaces when available. Optional MCP compatibility ask tools may be used only when already enabled. If consultation tools are unavailable, fall back to the `code-reviewer` agent.
+### 工具使用
+优先用 native `code-reviewer` agent 咨询，或 CLI 支持的 `ask_codex` 接口。仅当已启用时才用可选的 MCP 兼容 ask 工具。咨询工具不可用时回退到 `code-reviewer` agent。
 
-**Note:** Codex calls can take up to 1 hour. Consider the review timeline before consulting.
+**注意：** Codex 调用最长可能耗时 1 小时，咨询前请考虑评审时限。
 
 ## Output Format
 
@@ -202,87 +202,87 @@ RECOMMENDATION: COMMENT
 Address any WATCH concerns before treating the change as merge-ready.
 ```
 
-## Review Checklist
+## 评审清单
 
-The `code-reviewer` lane checks:
+`code-reviewer` lane 检查项：
 
 ### Security
-- [ ] No hardcoded secrets (API keys, passwords, tokens)
-- [ ] All user inputs sanitized
-- [ ] SQL/NoSQL injection prevention
-- [ ] XSS prevention (escaped outputs)
-- [ ] CSRF protection on state-changing operations
-- [ ] Authentication/authorization properly enforced
+- [ ] 无硬编码 secret（API key、密码、token）
+- [ ] 所有用户输入都做了 sanitize
+- [ ] 防 SQL/NoSQL 注入
+- [ ] 防 XSS（输出已转义）
+- [ ] 状态变更操作有 CSRF 防护
+- [ ] 鉴权 / 授权落实到位
 
 ### Code Quality
-- [ ] Functions < 50 lines (guideline)
-- [ ] Cyclomatic complexity < 10
-- [ ] No deeply nested code (> 4 levels)
-- [ ] No duplicate logic (DRY principle)
-- [ ] Clear, descriptive naming
+- [ ] 函数 < 50 行（参考）
+- [ ] 圈复杂度 < 10
+- [ ] 无深层嵌套（> 4 层）
+- [ ] 无重复逻辑（DRY 原则）
+- [ ] 命名清晰、描述性
 
 ### Performance
-- [ ] No N+1 query patterns
-- [ ] Appropriate caching where applicable
-- [ ] Efficient algorithms (avoid O(n²) when O(n) possible)
-- [ ] No unnecessary re-renders (React/Vue)
+- [ ] 没有 N+1 查询模式
+- [ ] 该用缓存的地方用了缓存
+- [ ] 算法高效（能 O(n) 就别 O(n²)）
+- [ ] 没有不必要的重渲染（React/Vue）
 
 ### Best Practices
-- [ ] Error handling present and appropriate
-- [ ] Logging at appropriate levels
-- [ ] Documentation for public APIs
-- [ ] Tests for critical paths
-- [ ] No commented-out code
+- [ ] 错误处理存在且合理
+- [ ] 日志级别合理
+- [ ] 公开 API 有文档
+- [ ] 关键路径有测试
+- [ ] 没有注释掉的代码
 
-## Architect Lane Checklist
+## Architect Lane 清单
 
-The `architect` lane checks:
+`architect` lane 检查项：
 
-- [ ] Boundary or interface changes are explicit
-- [ ] New coupling/tradeoff risks are surfaced
-- [ ] Long-horizon maintainability concerns are evidence-backed
-- [ ] Architectural status is one of `CLEAR`, `WATCH`, or `BLOCK`
-- [ ] Any `BLOCK` concern cites the reason merge-ready status should be withheld
+- [ ] 边界 / 接口的变化是显式的
+- [ ] 新的耦合 / 权衡风险被显式提出
+- [ ] 长期可维护性顾虑有证据支撑
+- [ ] 架构状态在 `CLEAR`、`WATCH` 或 `BLOCK` 之中
+- [ ] 任何 `BLOCK` 顾虑都说明了为什么不能给出可合并结论
 
-## Approval Criteria
+## 审批标准
 
-**APPROVE** - `code-reviewer` returns APPROVE and architect status is `CLEAR`
-**REQUEST CHANGES** - `code-reviewer` returns REQUEST CHANGES or architect status is `BLOCK`
-**COMMENT** - `code-reviewer` returns COMMENT with architect status `CLEAR`, architect status is `WATCH`, or only LOW/MEDIUM improvements remain
+**APPROVE** —— `code-reviewer` 返回 APPROVE 且 architect 状态为 `CLEAR`
+**REQUEST CHANGES** —— `code-reviewer` 返回 REQUEST CHANGES 或 architect 状态为 `BLOCK`
+**COMMENT** —— `code-reviewer` 返回 COMMENT 且 architect 状态为 `CLEAR`，或 architect 状态为 `WATCH`，或仅剩 LOW/MEDIUM 的改进项
 
 
-## Scenario Examples
+## 场景示例
 
-**Good:** The user says `continue` after the workflow already has a clear next step. Continue the current branch of work instead of restarting or re-asking the same question.
+**Good：** 工作流已经有清晰的下一步，用户说 `continue`。沿着当前分支继续，而不是重启或重复同一个问题。
 
-**Good:** The user changes only the output shape or downstream delivery step (for example `make a PR`). Preserve earlier non-conflicting workflow constraints and apply the update locally.
+**Good：** 用户只改变输出形态或下游交付步骤（例如 `make a PR`）。保留此前不冲突的工作流约束，把更新在局部应用。
 
-**Bad:** The user says `continue`, and the workflow restarts discovery or stops before the missing verification/evidence is gathered.
+**Bad：** 用户说 `continue`，工作流却重启发现流程，或在缺失校验 / 证据被收集之前就停下。
 
-## Use with Other Skills
+## 与其他 skill 配合
 
-**With Team:**
+**与 Team：**
 ```
 /team "review recent auth changes and report findings"
 ```
-Includes coordinated review execution across specialized agents.
+跨多个专精 agent 协同执行评审。
 
-**With Ralph:**
+**与 Ralph：**
 ```
 /ralph code-review then fix all issues
 ```
-On the explicit Ralph path, review findings should flow into automatic fix follow-up without another permission prompt. Plain `code-review` itself remains read-only and does **not** promise auto-fix.
+在显式 Ralph 路径上，评审发现应直接流向自动修复跟进，无需再问权限。普通的 `code-review` 本身保持只读，**不**承诺自动修复。
 
-**With Ultrawork:**
+**与 Ultrawork：**
 ```
 /ultrawork review all files in src/
 ```
-Parallel code review across multiple files.
+跨多文件并行代码评审。
 
-## Best Practices
+## 最佳实践
 
-- **Review early** - Catch issues before they compound
-- **Review often** - Small, frequent reviews better than huge ones
-- **Address CRITICAL/HIGH first** - Fix security and bugs immediately
-- **Consider context** - Some "issues" may be intentional trade-offs
-- **Learn from reviews** - Use feedback to improve coding practices
+- **早评审** —— 在问题复利前抓住它
+- **常评审** —— 小而频繁的评审胜过一次性巨型评审
+- **优先处理 CRITICAL/HIGH** —— 安全与 bug 立刻修
+- **考虑上下文** —— 有些「问题」可能是有意的取舍
+- **从评审中学习** —— 用反馈改进编码习惯

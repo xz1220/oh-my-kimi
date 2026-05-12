@@ -1,86 +1,86 @@
 ---
 name: ultraqa
-description: QA cycling workflow - test, verify, fix, repeat until goal met
+description: QA 循环工作流 —— 测试、验证、修复、重复，直到达成目标
 ---
 
 # UltraQA Skill
 
-## Operating Contract
+## 运行契约
 
-- Use outcome-first framing with concise, evidence-dense progress and completion reporting.
-- Treat newer user updates as local overrides for the active workflow branch while preserving earlier non-conflicting constraints.
-- If the user says `continue`, advance the current verified next step instead of restarting discovery.
+- 用结果优先的表述，进度与完成报告做到简洁、证据密集。
+- 把更新的用户指令视为当前工作流分支的本地覆盖，同时保留更早期、不冲突的约束。
+- 用户说 `continue` 时，推进当前已验证的下一步，而不是重启发现流程。
 
 [ULTRAQA ACTIVATED - AUTONOMOUS QA CYCLING]
 
-## Overview
+## 概览
 
-## Goal Parsing
+## 目标解析
 
-Parse the goal from arguments. Supported formats:
+从参数解析目标。支持的格式：
 
-| Invocation | Goal Type | What to Check |
+| 调用 | 目标类型 | 检查内容 |
 |------------|-----------|---------------|
-| `/ultraqa --tests` | tests | All test suites pass |
-| `/ultraqa --build` | build | Build succeeds with exit 0 |
-| `/ultraqa --lint` | lint | No lint errors |
-| `/ultraqa --typecheck` | typecheck | No TypeScript errors |
-| `/ultraqa --custom "pattern"` | custom | Custom success pattern in output |
+| `/ultraqa --tests` | tests | 所有测试套件通过 |
+| `/ultraqa --build` | build | 构建以 exit 0 退出 |
+| `/ultraqa --lint` | lint | 没有 lint 错误 |
+| `/ultraqa --typecheck` | typecheck | 没有 TypeScript 错误 |
+| `/ultraqa --custom "pattern"` | custom | 输出里包含自定义成功模式 |
 
-If no structured goal provided, interpret the argument as a custom goal.
+如果没有提供结构化目标，把参数解释为自定义目标。
 
-## Cycle Workflow
+## 循环工作流
 
-### Cycle N (Max 5)
+### Cycle N（最多 5）
 
-1. **RUN QA**: Execute verification based on goal type
-   - `--tests`: Run the project's test command
-   - `--build`: Run the project's build command
-   - `--lint`: Run the project's lint command
-   - `--typecheck`: Run the project's type check command
-   - `--custom`: Run appropriate command and check for pattern
-   - `--interactive`: Use qa-tester for interactive CLI/service testing:
+1. **RUN QA**：基于目标类型执行验证
+   - `--tests`：跑项目的测试命令
+   - `--build`：跑项目的构建命令
+   - `--lint`：跑项目的 lint 命令
+   - `--typecheck`：跑项目的类型检查命令
+   - `--custom`：跑合适的命令，并检查模式
+   - `--interactive`：用 qa-tester 做交互式 CLI/服务测试：
      ```
      Use `/prompts:qa-tester` with:
-     Goal: [describe what to verify]
-     Service: [how to start]
-     Test cases: [specific scenarios to verify]
+     Goal: [描述要验证什么]
+     Service: [如何启动]
+     Test cases: [要验证的具体场景]
      ```
 
-2. **CHECK RESULT**: Did the goal pass?
-   - **YES** → Exit with success message
-   - **NO** → Continue to step 3
+2. **CHECK RESULT**：目标通过了吗？
+   - **YES** → 以成功消息退出
+   - **NO** → 继续步骤 3
 
-3. **ARCHITECT DIAGNOSIS**: Spawn architect to analyze failure
+3. **ARCHITECT DIAGNOSIS**：派 architect 分析失败
    ```
    Use `/prompts:architect` with:
-   Goal: [goal type]
-   Output: [test/build output]
+   Goal: [目标类型]
+   Output: [test/build 输出]
    Provide root cause and specific fix recommendations.
    ```
 
-4. **FIX ISSUES**: Apply architect's recommendations
+4. **FIX ISSUES**：应用 architect 的建议
    ```
    Use `/prompts:executor` with:
    Issue: [architect diagnosis]
-   Files: [affected files]
+   Files: [受影响的文件]
    Apply the fix precisely as recommended.
    ```
 
-5. **REPEAT**: Go back to step 1
+5. **REPEAT**：回到步骤 1
 
-## Exit Conditions
+## 退出条件
 
-| Condition | Action |
+| 条件 | 行动 |
 |-----------|--------|
-| **Goal Met** | Exit with success: "ULTRAQA COMPLETE: Goal met after N cycles" |
-| **Cycle 5 Reached** | Exit with diagnosis: "ULTRAQA STOPPED: Max cycles. Diagnosis: ..." |
-| **Same Failure 3x** | Exit early: "ULTRAQA STOPPED: Same failure detected 3 times. Root cause: ..." |
-| **Environment Error** | Exit: "ULTRAQA ERROR: [tmux/port/dependency issue]" |
+| **Goal Met** | 成功退出：「ULTRAQA COMPLETE: Goal met after N cycles」 |
+| **Cycle 5 Reached** | 带诊断退出：「ULTRAQA STOPPED: Max cycles. Diagnosis: ...」 |
+| **Same Failure 3x** | 提前退出：「ULTRAQA STOPPED: Same failure detected 3 times. Root cause: ...」 |
+| **Environment Error** | 退出：「ULTRAQA ERROR: [tmux/port/dependency issue]」 |
 
-## Observability
+## 可观测性
 
-Output progress each cycle:
+每个循环输出进度：
 ```
 [ULTRAQA Cycle 1/5] Running tests...
 [ULTRAQA Cycle 1/5] FAILED - 3 tests failing
@@ -91,50 +91,50 @@ Output progress each cycle:
 [ULTRAQA COMPLETE] Goal met after 2 cycles
 ```
 
-## State Tracking
+## 状态跟踪
 
-Use the CLI-first state surface (`omk state ... --json`) for UltraQA lifecycle state. If explicit MCP compatibility tools are already available, equivalent `omx_state` calls are optional compatibility, not the default.
+UltraQA 生命周期状态使用 CLI 优先的状态接口（`omk state ... --json`）。如果显式 MCP 兼容工具已可用，等价的 `omx_state` 调用属于可选兼容，不作为默认。
 
-- **On start**:
+- **启动时**：
   `omk state write --input '{"mode":"ultraqa","active":true,"current_phase":"qa","iteration":1,"started_at":"<now>"}' --json`
-- **On each cycle**:
+- **每个循环**：
   `omk state write --input '{"mode":"ultraqa","current_phase":"qa","iteration":<cycle>}' --json`
-- **On diagnose/fix transitions**:
+- **diagnose/fix 状态切换时**：
   `omk state write --input '{"mode":"ultraqa","current_phase":"diagnose"}' --json`
   `omk state write --input '{"mode":"ultraqa","current_phase":"fix"}' --json`
-- **On completion**:
+- **完成时**：
   `omk state write --input '{"mode":"ultraqa","active":false,"current_phase":"complete","completed_at":"<now>"}' --json`
-- **For resume detection**:
+- **resume 检测**：
   `omk state read --input '{"mode":"ultraqa"}' --json`
 
-## Scenario Examples
+## 场景示例
 
-**Good:** The user says `continue` after the workflow already has a clear next step. Continue the current branch of work instead of restarting or re-asking the same question.
+**Good：** 工作流已经有明确的下一步，用户说 `continue`。继续当前工作分支，而不是重启或重新询问同一个问题。
 
-**Good:** The user changes only the output shape or downstream delivery step (for example `make a PR`). Preserve earlier non-conflicting workflow constraints and apply the update locally.
+**Good：** 用户只改输出形态或下游交付步骤（例如 `make a PR`）。保留更早期、不冲突的工作流约束，并在本地应用更新。
 
-**Bad:** The user says `continue`, and the workflow restarts discovery or stops before the missing verification/evidence is gathered.
+**Bad：** 用户说 `continue`，工作流却重启发现流程，或在缺失的验证 / 证据被收集之前就停下。
 
-## Cancellation
+## 取消
 
-User can cancel with `/cancel` which clears the state file.
+用户可以用 `/cancel` 取消，会清掉状态文件。
 
-## Important Rules
+## 重要规则
 
-1. **PARALLEL when possible** - Run diagnosis while preparing potential fixes
-2. **TRACK failures** - Record each failure to detect patterns
-3. **EARLY EXIT on pattern** - 3x same failure = stop and surface
-4. **CLEAR OUTPUT** - User should always know current cycle and status
-5. **CLEAN UP** - Clear state file on completion or cancellation
+1. **能并行就并行** —— 边诊断边准备可能的修复
+2. **跟踪失败** —— 记录每次失败以识别规律
+3. **遇到规律提前退出** —— 同一失败 3 次 = 停下并暴露问题
+4. **清晰输出** —— 用户应始终能看到当前 cycle 与状态
+5. **清理** —— 完成或取消时清掉状态文件
 
-## STATE CLEANUP ON COMPLETION
+## 完成时的状态清理
 
-When goal is met OR max cycles reached OR exiting early, run `$cancel` or call:
+达成目标 / 达到最大循环数 / 提前退出时，运行 `$cancel` 或调用：
 
 `omk state clear --input '{"mode":"ultraqa"}' --json`
 
-Use CLI state cleanup rather than deleting files directly.
+用 CLI 状态清理，而不是直接删文件。
 
 ---
 
-Begin ULTRAQA cycling now. Parse the goal and start cycle 1.
+现在开始 ULTRAQA 循环。解析目标，从 cycle 1 启动。

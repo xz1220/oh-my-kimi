@@ -4,7 +4,7 @@ agent:
   name: qa-tester
   system_prompt_path: ./qa-tester.md
   when_to_use: |
-    Interactive CLI testing specialist using tmux for session management
+    基于 tmux 做会话管理的交互式 CLI 测试专家
   allowed_tools:
     - "kimi_cli.tools.shell:Shell"
     - "kimi_cli.tools.file:ReadFile"

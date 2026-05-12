@@ -4,7 +4,7 @@ agent:
   name: security-reviewer
   system_prompt_path: ./security-reviewer.md
   when_to_use: |
-    Security vulnerability detection specialist (OWASP Top 10, secrets, unsafe patterns)
+    安全漏洞检测专家（OWASP Top 10、secret、危险模式）
   allowed_tools:
     - "kimi_cli.tools.shell:Shell"
     - "kimi_cli.tools.file:ReadFile"

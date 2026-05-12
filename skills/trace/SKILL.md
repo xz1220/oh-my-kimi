@@ -1,150 +1,150 @@
 ---
 name: trace
-description: Evidence-driven tracing lane that orchestrates competing tracer hypotheses in Kimi's Agent tool
-argument-hint: "<observation to trace>"
+description: 证据驱动的追踪通道，在 Kimi 的 Agent 工具中编排互相竞争的 tracer 假设
+argument-hint: "<要追踪的观察>"
 agent: tracer
 level: 2
 ---
 
 # Trace Skill
 
-Use this skill for ambiguous, causal, evidence-heavy questions where the goal is to explain **why** an observed result happened, not to jump directly into fixing or rewriting code.
+当问题是模糊的、因果的、证据密集的，目标是解释**为什么**会发生某个观察到的结果，而不是直接动手修代码或重写代码时，使用本 skill。
 
-This is the orchestration layer on top of the built-in `tracer` agent. The goal is to make tracing feel like a reusable oh-my-kimi operating lane: restate the observation, generate competing explanations, gather evidence in parallel, rank the explanations, and propose the next probe that would collapse uncertainty fastest.
+这是建在内置 `tracer` agent 之上的编排层。目标是让 tracing 像一个可复用的 oh-my-kimi 操作通道一样：复述观察、生成互相竞争的解释、并行收集证据、对解释排序、提出能最快折叠不确定性的下一步探针。
 
-## Good entry cases
+## 适合的入口场景
 
-Use `/oh-my-kimi:trace` when the problem is:
+当问题是以下情形时，使用 `/oh-my-kimi:trace`：
 
-- ambiguous
-- causal
-- evidence-heavy
-- best answered by exploring competing explanations in parallel
+- 模糊
+- 因果
+- 证据密集
+- 适合通过并行探索互相竞争的解释来回答
 
-Examples:
-- runtime bugs and regressions
-- performance / latency / resource behavior
-- architecture / premortem / postmortem analysis
-- scientific or experimental result tracing
-- config / routing / orchestration behavior explanation
-- “given this output, trace back the likely causes”
+例子：
+- 运行时 bug 与回归
+- 性能 / 延迟 / 资源行为
+- 架构 / 事前事后分析（premortem / postmortem）
+- 科学或实验结果追踪
+- 配置 / 路由 / 编排行为解释
+- 「给定这个输出，回溯可能的原因」
 
-## Core tracing contract
+## 追踪契约（核心）
 
-Always preserve these distinctions:
+始终保留下面这些区分：
 
-1. **Observation** -- what was actually observed
-2. **Hypotheses** -- competing explanations
-3. **Evidence For** -- what supports each explanation
-4. **Evidence Against / Gaps** -- what contradicts it or is still missing
-5. **Current Best Explanation** -- the leading explanation right now
-6. **Critical Unknown** -- the missing fact keeping the top explanations apart
-7. **Discriminating Probe** -- the highest-value next step to collapse uncertainty
+1. **Observation** —— 实际观察到了什么
+2. **Hypotheses** —— 互相竞争的解释
+3. **Evidence For** —— 每个解释的支持证据
+4. **Evidence Against / Gaps** —— 反驳证据或仍然缺失的部分
+5. **Current Best Explanation** —— 当前的领先解释
+6. **Critical Unknown** —— 让头部解释无法分开的关键缺失事实
+7. **Discriminating Probe** —— 能最快折叠不确定性的最高价值下一步
 
-Do **not** collapse into:
-- a generic fix-it coding loop
-- a generic debugger summary
-- a raw dump of worker output
-- fake certainty when evidence is incomplete
+**不要**塌缩成：
+- 通用的「fix-it」编码循环
+- 通用的 debugger 摘要
+- worker 输出的原始堆砌
+- 证据不全时的虚假确定性
 
-## Evidence strength hierarchy
+## 证据强度层级
 
-Treat evidence as ranked, not flat.
+把证据按层级看待，而不是平的。
 
-From strongest to weakest:
+从最强到最弱：
 
-1. **Controlled reproductions / direct experiments / uniquely discriminating artifacts**
-2. **Primary source artifacts with tight provenance** (trace events, logs, metrics, benchmark outputs, configs, git history, file:line behavior)
-3. **Multiple independent sources converging on the same explanation**
-4. **Single-source code-path or behavioral inference**
-5. **Weak circumstantial clues** (timing, naming, stack order, resemblance to prior bugs)
-6. **Intuition / analogy / speculation**
+1. **受控复现 / 直接实验 / 唯一可判别的工件**
+2. **来源紧密的一手工件**（trace 事件、日志、指标、benchmark 输出、配置、git 历史、file:line 行为）
+3. **多个独立来源汇聚到同一个解释**
+4. **单一来源的代码路径或行为推断**
+5. **弱的间接线索**（时序、命名、栈顺序、与既往 bug 的相似性）
+6. **直觉 / 类比 / 推测**
 
-Explicitly down-rank hypotheses that depend mostly on lower tiers when stronger contradictory evidence exists.
+当存在更强的反证时，对主要依赖低层证据的假设显式降级。
 
-## Strong falsification / disconfirmation rules
+## 强证伪 / 反证规则
 
-Every serious `/trace` run must try to falsify its own favorite explanation.
+每一次严肃的 `/trace` 都必须尝试证伪自己最偏爱的解释。
 
-For each top hypothesis:
+对每个头部假设：
 
-- collect evidence **for** it
-- collect evidence **against** it
-- state what distinctive prediction it makes
-- state what observation would be hard to reconcile with it
-- identify the cheapest probe that would discriminate it from the next-best alternative
+- 收集**支持**的证据
+- 收集**反对**的证据
+- 陈述它做出哪条独有的预测
+- 陈述哪个观察会让它难以自圆其说
+- 找出能把它与下一个最优替代方案区分开的最便宜探针
 
-Down-rank a hypothesis when:
+在以下情况下对一个假设降级：
 
-- direct evidence contradicts it
-- it survives only by adding new unverified assumptions
-- it makes no distinctive prediction compared with rivals
-- a stronger alternative explains the same facts with fewer assumptions
-- its support is mostly circumstantial while the rival has stronger evidence tiers
+- 直接证据与之矛盾
+- 它只能靠不断追加未经验证的假设而存活
+- 它与对手相比没有独有的预测
+- 更强的替代方案能用更少假设解释相同事实
+- 它的支持主要是间接的，而对手有更强证据层
 
-## Team-mode orchestration shape
+## 团队模式编排形态
 
-Use **Kimi's Agent tool** for `/trace`.
+`/trace` 使用 **Kimi 的 Agent 工具**。
 
-The lead should:
+Lead 应当：
 
-1. Restate the observed result or “why” question precisely
-2. Extract the tracing target
-3. Generate multiple deliberately different candidate hypotheses
-4. Spawn **3 tracer lanes by default** in team mode
-5. Assign one tracer worker per lane
-6. Instruct each tracer worker to gather evidence **for** and **against** its lane
-7. Run a **rebuttal round** between the leading hypothesis and the strongest remaining alternative
-8. Detect whether the top lanes genuinely differ or actually converge on the same root cause
-9. Merge findings into a ranked synthesis with an explicit critical unknown and discriminating probe
+1. 精确复述观察到的结果或「为什么」问题
+2. 抽取追踪目标
+3. 生成多个**有意制造差异**的候选假设
+4. 在团队模式下默认**派出 3 条 tracer 通道**
+5. 每条通道分配一个 tracer worker
+6. 指示每个 tracer worker 为自己的通道收集**支持**与**反对**的证据
+7. 在领先假设与最强替代假设之间运行一轮**反驳回合**
+8. 检测头部通道是真正分歧，还是其实在同一根因上汇聚
+9. 把发现合并成排序综合，附带显式的 critical unknown 与 discriminating probe
 
-Important: workers should pursue deliberately different explanations, not the same explanation in parallel.
+重要：worker 应当追求**有意不同**的解释，而不是同一个解释的并行复制。
 
-## Default hypothesis lanes for v1
+## v1 默认假设通道
 
-Unless the prompt strongly suggests a better partition, use these 3 default lanes:
+除非提示明显暗示更好的划分，默认使用这 3 条通道：
 
-1. **Code-path / implementation cause**
-2. **Config / environment / orchestration cause**
-3. **Measurement / artifact / assumption mismatch cause** — covers verification-method defects, not just system defects. Examples: the verification query reuses a single dimensional key across distinct entities, tenants, streams, or groups; the comparison filter shape does not match the schema grain; or the catalog or column name was assumed portable across runtimes without enumeration. This includes multi-entity premise/key-assumption mismatches.
+1. **代码路径 / 实现层原因**
+2. **配置 / 环境 / 编排层原因**
+3. **测量 / 工件 / 假设错配原因** —— 涵盖验证方法本身的缺陷，不只是系统缺陷。例如：验证查询在不同实体、租户、流或组之间重用了同一个维度键；比较过滤的形状与 schema 粒度不匹配；或者跨运行时把目录或列名当作可移植却未做枚举。这也涵盖了多实体下的前提/键假设错配。
 
-For lane 3, cross-entity discrepancies need a premise audit before escalation: enumerate entity dimensions and check whether a zero-row or mismatch result came from applying one key across multiple entities rather than from a system defect; the result may be a verification-methodology defect.
+对通道 3，跨实体差异在升级前需要做一次前提审计：枚举实体维度，检查零行或不匹配的结果是源于把一个键应用到多个实体上，还是源于真正的系统缺陷；结果可能是验证方法本身的缺陷。
 
-These defaults are intentionally broad so the first slice works across bug, performance, architecture, and experiment tracing.
+这些默认值刻意宽，让第一刀切片能跨 bug、性能、架构与实验追踪都适用。
 
-## Mandatory cross-check lenses
+## 必做的交叉检查透镜
 
-After the initial evidence pass, pressure-test the leaders with these lenses when relevant:
+在初轮证据采集之后，相关时用下面的透镜对领先者施压：
 
-- **Systems lens** -- queues, retries, backpressure, feedback loops, upstream/downstream dependencies, boundary failures, coordination effects
-- **Premortem lens** -- assume the current best explanation is incomplete or wrong; what failure mode would embarrass the trace later?
-- **Science lens** -- controls, confounders, measurement bias, alternative variables, falsifiable predictions
+- **系统透镜** —— 队列、重试、背压、反馈回路、上游 / 下游依赖、边界失败、协调效应
+- **Premortem 透镜** —— 假设当前最佳解释不完整或错的，什么失败模式会让 trace 之后尴尬？
+- **科学透镜** —— 控制、混杂、测量偏差、替代变量、可证伪的预测
 
-These lenses are not filler. Use them when they can surface a missed explanation, hidden dependency, or weak inference.
+这些透镜不是凑数。只在它们可能挖出被忽略的解释、隐藏依赖或弱推断时使用。
 
-## Worker contract
+## Worker 契约
 
-Each worker should be a **`tracer`** lane owner, not a generic executor.
+每个 worker 应当是一条 **`tracer`** 通道的拥有者，而不是通用 executor。
 
-Each worker must:
+每个 worker 必须：
 
-- own exactly one hypothesis lane
-- restate its lane hypothesis explicitly
-- gather evidence **for** the lane
-- gather evidence **against** the lane
-- rank the evidence strength behind its case
-- call out missing evidence, failed predictions, and remaining uncertainty
-- name the **critical unknown** for the lane
-- recommend the best lane-specific **discriminating probe**
-- avoid collapsing into implementation unless explicitly told to do so
+- 拥有且只拥有一条假设通道
+- 显式复述本通道的假设
+- 收集**支持**通道的证据
+- 收集**反对**通道的证据
+- 给本通道的证据强度排序
+- 标出缺失的证据、失败的预测与残余的不确定性
+- 命名本通道的 **critical unknown**
+- 推荐本通道最佳的 **discriminating probe**
+- 除非被明确告知，避免塌缩到实现层
 
-Useful evidence sources include:
+有用的证据来源包括：
 
-- relevant code, tests, configs, docs, logs, outputs, and benchmark artifacts
-- existing trace artifacts via `trace_timeline`
-- existing aggregate trace evidence via `trace_summary`
+- 相关代码、测试、配置、文档、日志、输出与 benchmark 工件
+- 通过 `trace_timeline` 拿到的已有 trace 工件
+- 通过 `trace_summary` 拿到的已有聚合 trace 证据
 
-Recommended worker return structure:
+建议的 worker 返回结构：
 
 1. **Lane**
 2. **Hypothesis**
@@ -155,11 +155,11 @@ Recommended worker return structure:
 7. **Best Discriminating Probe**
 8. **Confidence**
 
-## Leader synthesis contract
+## Leader 综合契约
 
-The final `/trace` answer should synthesize, not just concatenate.
+最终的 `/trace` 回答应当是综合，而不是堆叠。
 
-Return:
+返回：
 
 1. **Observed Result**
 2. **Ranked Hypotheses**
@@ -170,65 +170,65 @@ Return:
 7. **Most Likely Explanation**
 8. **Critical Unknown**
 9. **Recommended Discriminating Probe**
-10. **Additional Trace Lanes** (optional, only if uncertainty remains high)
+10. **Additional Trace Lanes**（可选，仅当不确定性仍然很高时）
 
-Preserve a ranked shortlist even if one explanation is currently dominant.
+即使当前已经有一个主导解释，仍保留一份排序的候选清单。
 
-## Rebuttal round and convergence detection
+## 反驳回合与汇聚检测
 
-Before closing the trace:
+在收尾前：
 
-- let the strongest non-leading lane present its best rebuttal to the current leader
-- force the leader to answer the rebuttal with evidence, not assertion
-- if the rebuttal materially weakens the leader, re-rank the table
-- if two “different” hypotheses reduce to the same underlying mechanism, merge them and say so explicitly
-- if two hypotheses still imply different next probes, keep them separate even if they sound similar
+- 让最强的非领先通道给当前领先者抛出最佳反驳
+- 强制领先者用证据而非断言来回应反驳
+- 如果反驳实质上削弱了领先者，重新排序
+- 如果两个「不同」的假设其实归约到同一个底层机制，合并它们并明说
+- 如果两个假设仍然意味着不同的下一步探针，即便措辞相近也分开保留
 
-Do not claim convergence just because multiple workers use similar language. Convergence requires either:
+不要因为多个 worker 用了相似语言就声称汇聚。汇聚需要要么：
 
-- the same root causal mechanism, or
-- independent evidence streams pointing to the same explanation
+- 同一根因机制，或者
+- 独立证据流指向同一解释
 
-## Explicit down-ranking guidance
+## 显式降级指引
 
-The lead should explicitly say why a hypothesis moved down:
+Lead 应当显式说明为什么一个假设下移：
 
-- contradicted by stronger evidence
-- lacks the observation it predicted
-- requires extra ad hoc assumptions
-- explains fewer facts than the leader
-- lost the rebuttal round
-- converged into a stronger parent explanation
+- 被更强证据反驳
+- 缺少它所预言的那个观察
+- 需要额外的临时假设
+- 解释的事实比领先者更少
+- 在反驳回合中败北
+- 汇聚进入更强的父级解释
 
-This is important because `/trace` should teach the reader **why** one explanation outranks another, not just present a final table.
+这很重要，因为 `/trace` 应当**教**读者为什么一个解释胜过另一个，而不是只甩出一张最终表。
 
-## Suggested lead prompt skeleton
+## 建议的 lead 提示骨架
 
-Use a team-oriented orchestration prompt along these lines:
+使用面向团队编排的提示，大致如下：
 
-1. “Restate the observation exactly.”
-2. “Generate 3 deliberately different hypotheses.”
-3. “Create one tracer lane per hypothesis using Kimi's Agent tool.”
-4. “For each lane, gather evidence for and against, rank evidence strength, and name the critical unknown plus best discriminating probe.”
-5. “Apply systems, premortem, and science lenses to the leaders if useful.”
-6. “Run a rebuttal round between the top two explanations.”
-7. “Return a ranked explanation table, convergence notes, the critical unknown, and the single best discriminating probe.”
+1. 「精确复述观察。」
+2. 「生成 3 条有意制造差异的假设。」
+3. 「用 Kimi 的 Agent 工具，每个假设建一条 tracer 通道。」
+4. 「对每条通道，收集支持与反对的证据、给证据强度排序，命名 critical unknown 与最佳 discriminating probe。」
+5. 「在有用时对领先者应用系统、premortem、科学透镜。」
+6. 「在头部两个解释之间跑一轮反驳回合。」
+7. 「返回排序的解释表、汇聚说明、critical unknown 与单一最佳 discriminating probe。」
 
-## Output quality bar
+## 输出质量门槛
 
-Good `/trace` output is:
+好的 `/trace` 输出是：
 
-- evidence-backed
-- concise but rigorous
-- skeptical of premature certainty
-- explicit about missing evidence
-- practical about the next action
-- explicit about why weaker explanations were down-ranked
+- 有证据支撑的
+- 简洁但严谨
+- 对过早确定性保持怀疑
+- 对缺失证据保持显式
+- 对下一步行动保持务实
+- 显式说明为什么弱解释被降级
 
-## Example final synthesis shape
+## 最终综合形态示例
 
 ### Observed Result
-[What happened]
+[发生了什么]
 
 ### Ranked Hypotheses
 | Rank | Hypothesis | Confidence | Evidence Strength | Why it leads |
@@ -253,13 +253,13 @@ Good `/trace` output is:
 - ...
 
 ### Most Likely Explanation
-[Current best explanation]
+[当前最佳解释]
 
 ### Critical Unknown
-[Single missing fact keeping uncertainty open]
+[让不确定性悬而未决的单一缺失事实]
 
 ### Recommended Discriminating Probe
-[Single next probe]
+[单一下一步探针]
 
 ### Additional Trace Lanes
-[Only if uncertainty remains high]
+[仅当不确定性仍然很高时]

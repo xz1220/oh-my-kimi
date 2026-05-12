@@ -4,7 +4,7 @@ agent:
   name: scientist
   system_prompt_path: ./scientist.md
   when_to_use: |
-    Data analysis and research execution specialist
+    数据分析与研究执行专家
   allowed_tools:
     - "kimi_cli.tools.shell:Shell"
     - "kimi_cli.tools.file:ReadFile"

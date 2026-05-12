@@ -1,19 +1,19 @@
 ---
 name: security-review
-description: Security-focused review for secrets, injection, authz/authn, unsafe IO, dependency, and data exposure risks.
-argument-hint: "<diff, files, or feature>"
+description: 面向密钥、注入、authz/authn、不安全 IO、依赖与数据外泄风险的安全评审
+argument-hint: "<diff、文件或功能>"
 ---
 
 # Security Review
 
-Check for:
+检查以下风险：
 
-- Secrets or credential handling mistakes.
-- Injection through shell, SQL, template, path, or browser sinks.
-- Missing authorization checks.
-- Confused authentication boundaries.
-- Unsafe file writes, archive extraction, or path traversal.
-- Excessive logging of personal or sensitive data.
-- Dependency or supply-chain risk introduced by the change.
+- 密钥或凭据处理错误。
+- 通过 shell、SQL、模板、路径或浏览器 sink 的注入。
+- 缺失授权检查。
+- 认证边界混淆。
+- 不安全的文件写入、归档解压或路径穿越。
+- 过度记录个人或敏感数据。
+- 本次改动引入的依赖或供应链风险。
 
-Report only plausible risks grounded in code or config evidence.
+只报告有代码或配置证据支撑的合理风险。

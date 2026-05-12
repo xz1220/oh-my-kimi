@@ -1,83 +1,80 @@
 ---
 name: cancel
-description: Cancel any active oh-my-kimi mode (autopilot, ralph, ultrawork, ecomode, ultraqa, swarm, ultrapilot, pipeline, team)
+description: 取消任何活跃的 oh-my-kimi 模式（autopilot、ralph、ultrawork、ecomode、ultraqa、swarm、ultrapilot、pipeline、team）
 ---
 
 # Cancel Skill
 
-Intelligent cancellation that detects and cancels the active oh-my-kimi mode.
+智能检测并取消活跃的 oh-my-kimi 模式。
 
-**The cancel skill is the standard way to complete and exit any oh-my-kimi mode.**
-When the stop hook detects work is complete, it instructs the LLM to invoke
-this skill for proper state cleanup. If cancel fails or is interrupted,
-retry with `--force` flag, or wait for the 2-hour staleness timeout as
-a last resort.
+**cancel skill 是收尾并退出任意 oh-my-kimi 模式的标准方式。**
+当 stop hook 检测到工作完成时，会指示 LLM 调用本 skill 做状态清理。如果 cancel 失败或被中断，可加 `--force` 重试，或作为最后手段等待 2 小时的过期超时。
 
-## What It Does
+## 做什么
 
-Automatically detects which mode is active and cancels it:
-- **Autopilot**: Stops workflow, preserves progress for resume
-- **Ralph**: Stops persistence loop, clears linked ultrawork if applicable
-- **Ultrawork**: Stops parallel execution (standalone or linked)
-- **Ecomode**: Stops token-efficient parallel execution (standalone or linked to ralph)
-- **UltraQA**: Stops QA cycling workflow
-- **Swarm**: Stops coordinated agent swarm, releases claimed tasks
-- **Ultrapilot**: Stops parallel autopilot workers
-- **Pipeline**: Stops sequential agent pipeline
-- **Team**: Sends shutdown inbox to all workers, waits for exit, kills tmux session, and clears team state
+自动检测当前活跃的模式并取消：
+- **Autopilot**：停止工作流，保留进度以便恢复
+- **Ralph**：停止持久化循环，若有关联则清理 linked ultrawork
+- **Ultrawork**：停止并行执行（独立或 linked）
+- **Ecomode**：停止 token-efficient 并行执行（独立或与 ralph 关联）
+- **UltraQA**：停止 QA 循环工作流
+- **Swarm**：停止协同 agent swarm，释放已认领的任务
+- **Ultrapilot**：停止并行 autopilot worker
+- **Pipeline**：停止顺序 agent 流水线
+- **Team**：给所有 worker 发关停 inbox，等待退出，杀掉 tmux 会话，并清空 team 状态
 
-## Usage
+## 用法
 
 ```
 /cancel
 ```
 
-Or say: "cancelomc", "stopomc"
+或者说："cancelomc"、"stopomc"。
 
-## Auto-Detection
+## 自动检测
 
-`/cancel` follows the session-aware state contract:
-- By default the command inspects the current session via `state_list_active` and `state_get_status`, navigating `.omk/state/sessions/{sessionId}/…` to discover which mode is active.
-- When a session id is provided or already known, that session-scoped path is authoritative. Legacy files in `.omk/state/*.json` are consulted only as a compatibility fallback if the session id is missing or empty.
-- Swarm is a shared SQLite/marker mode (`.omk/state/swarm.db` / `.omk/state/swarm-active.marker`) and is not session-scoped.
-- The default cleanup flow calls `state_clear` with the session id to remove only the matching session files; modes stay bound to their originating session.
+`/cancel` 遵循会话感知的状态契约：
+- 默认情况下，命令通过 `state_list_active` 与 `state_get_status` 检视当前会话，按 `.omk/state/sessions/{sessionId}/…` 路径发现活跃模式。
+- 当提供了 session id 或已知时，该会话作用域路径为权威。`.omk/state/*.json` 下的旧文件只在 session id 缺失或为空时作为兼容回退。
+- Swarm 是共享的 SQLite / marker 模式（`.omk/state/swarm.db` / `.omk/state/swarm-active.marker`），不受 session 作用域约束。
+- 默认清理流程用 session id 调用 `state_clear`，仅移除匹配的 session 文件；模式仍绑定到它们的发起会话。
 
-## Normative Ralph cancellation post-conditions (MUST)
+## Ralph 取消的规范性后置条件（MUST）
 
-For Ralph-targeted cancellation (standalone or linked), completion is defined by post-conditions:
+针对 Ralph 的取消（独立或 linked），按后置条件判定是否完成：
 
-1. Target Ralph state is terminalized, not silently removed:
+1. 目标 Ralph state 被「终态化」，而非静默删除：
    - `active=false`
    - `current_phase='cancelled'`
-   - `completed_at` is set (ISO timestamp)
-2. If Ralph is linked to Ultrawork or Ecomode in the same scope, that linked mode is also terminalized/non-active.
-4. Cancellation MUST remain scope-safe: no mutation of unrelated sessions.
+   - `completed_at` 已设置（ISO 时间戳）
+2. 若 Ralph 在同一作用域内 linked 到 Ultrawork 或 Ecomode，则该 linked 模式也被终态化 / 非活跃。
+4. 取消必须保持作用域安全：不得改动无关 session。
 
-See: `docs/contracts/ralph-cancel-contract.md`.
+参见：`docs/contracts/ralph-cancel-contract.md`。
 
-Active modes are still cancelled in dependency order:
-1. Autopilot (includes linked ralph/ultraqa/ecomode cleanup)
-2. Ralph (cleans its linked ultrawork or ecomode)
-3. Ultrawork (standalone)
-4. Ecomode (standalone)
-5. UltraQA (standalone)
-6. Swarm (standalone)
-7. Ultrapilot (standalone)
-8. Pipeline (standalone)
-9. Team (tmux-based)
-10. Plan Consensus (standalone)
+活跃模式仍按依赖顺序取消：
+1. Autopilot（含 linked ralph/ultraqa/ecomode 清理）
+2. Ralph（清理其 linked ultrawork 或 ecomode）
+3. Ultrawork（独立）
+4. Ecomode（独立）
+5. UltraQA（独立）
+6. Swarm（独立）
+7. Ultrapilot（独立）
+8. Pipeline（独立）
+9. Team（基于 tmux）
+10. Plan Consensus（独立）
 
-## Normative Ralph post-conditions (MUST)
+## Ralph 后置条件的规范性约束（MUST）
 
-When cancellation targets Ralph state in a scope, completion requires all of the following:
+当取消针对某个作用域内的 Ralph state 时，完成必须同时满足以下全部条件：
 
-1. Ralph state is terminal in that same scope: `active=false`, `current_phase='cancelled'` (or linked terminal phase), and `completed_at` is set.
-2. Linked Ultrawork/Ecomode in the same scope is also terminal/non-active.
-4. Unrelated sessions are untouched.
+1. 在该作用域内 Ralph state 处于终态：`active=false`、`current_phase='cancelled'`（或 linked 的终态阶段）、并设置 `completed_at`。
+2. 同作用域内 linked 的 Ultrawork/Ecomode 也处于终态 / 非活跃。
+4. 无关 session 不受影响。
 
 ## Force Clear All
 
-Use `--force` or `--all` when you need to erase every session plus legacy artifacts, e.g., to reset the workspace entirely.
+需要擦除所有 session 加遗留工件（例如整工作区重置）时用 `--force` 或 `--all`。
 
 ```
 /cancel --force
@@ -87,15 +84,15 @@ Use `--force` or `--all` when you need to erase every session plus legacy artifa
 /cancel --all
 ```
 
-Steps under the hood:
-1. `state_list_active` enumerates `.omk/state/sessions/{sessionId}/…` to find every known session.
-2. `state_clear` runs once per session to drop that session’s files.
-3. A global `state_clear` without `session_id` removes legacy files under `.omk/state/*.json`, `.omk/state/swarm*.db`, and compatibility artifacts (see list).
-4. Team artifacts (`.omk/state/team/*/`, tmux sessions matching `omx-team-*`) are best-effort cleared as part of the legacy fallback.
+幕后步骤：
+1. `state_list_active` 枚举 `.omk/state/sessions/{sessionId}/…` 找出每个已知 session。
+2. 每个 session 跑一次 `state_clear` 删掉该 session 的文件。
+3. 一次无 `session_id` 的全局 `state_clear` 删除 `.omk/state/*.json` 下的旧文件、`.omk/state/swarm*.db` 与兼容工件（见列表）。
+4. Team 工件（`.omk/state/team/*/`、匹配 `omx-team-*` 的 tmux 会话）作为兼容回退的一部分尽力清理。
 
-Every `state_clear` command honors the `session_id` argument, so even force mode still uses the session-aware paths first before deleting legacy files.
+每个 `state_clear` 命令都尊重 `session_id` 参数，因此即便是 force 模式也仍先走 session 感知路径，再去删旧文件。
 
-Legacy compatibility list (removed only under `--force`/`--all`):
+兼容遗留清单（只在 `--force`/`--all` 下移除）：
 - `.omk/state/autopilot-state.json`
 - `.omk/state/ralph-state.json`
 - `.omk/state/ralph-plan-state.json`
@@ -120,13 +117,13 @@ Legacy compatibility list (removed only under `--force`/`--all`):
 - `.omk/state/rate-limit-daemon.pid`
 - `.omk/state/rate-limit-daemon.log`
 - `.omk/state/checkpoints/` (directory)
-- `.omk/state/sessions/` (empty directory cleanup after clearing sessions)
+- `.omk/state/sessions/`（清完 session 后空目录清理）
 
-## Implementation Steps
+## 实现步骤
 
-When you invoke this skill:
+调用该 skill 时：
 
-### 1. Parse Arguments
+### 1. 解析参数
 
 ```bash
 # Check for --force or --all flags
@@ -136,32 +133,32 @@ if [[ "$*" == *"--force"* ]] || [[ "$*" == *"--all"* ]]; then
 fi
 ```
 
-### 2. Detect Active Modes
+### 2. 检测活跃模式
 
-The skill now relies on the session-aware state contract rather than hard-coded file paths:
-1. Call `state_list_active` to enumerate `.omk/state/sessions/{sessionId}/…` and discover every active session.
-2. For each session id, call `state_get_status` to learn which mode is running (`autopilot`, `ralph`, `ultrawork`, etc.) and whether dependent modes exist.
-3. If a `session_id` was supplied to `/cancel`, skip legacy fallback entirely and operate solely within that session path; otherwise, consult legacy files in `.omk/state/*.json` only if the state tools report no active session. Swarm remains a shared SQLite/marker mode outside session scoping.
-4. Any cancellation logic in this doc mirrors the dependency order discovered via state tools (autopilot → ralph → …).
+skill 现在依赖会话感知的状态契约，而不是硬编码文件路径：
+1. 调用 `state_list_active` 枚举 `.omk/state/sessions/{sessionId}/…`，发现每个活跃 session。
+2. 对每个 session id 调用 `state_get_status` 了解正在跑的模式（`autopilot`、`ralph`、`ultrawork` 等）以及是否存在依赖模式。
+3. 如果 `/cancel` 传入了 `session_id`，完全跳过遗留回退，只在该 session 路径下操作；否则只有当状态工具报告无活跃 session 时才查阅 `.omk/state/*.json` 下的旧文件。Swarm 仍是 session 作用域外的共享 SQLite / marker 模式。
+4. 本文中的任何取消逻辑都镜像状态工具发现的依赖顺序（autopilot → ralph → …）。
 
-### 3A. Force Mode (if --force or --all)
+### 3A. Force Mode（若 --force 或 --all）
 
-Use force mode to clear every session plus legacy artifacts via `state_clear`. Direct file removal is reserved for legacy cleanup when the state tools report no active sessions.
+用 force 模式通过 `state_clear` 清掉所有 session 加遗留工件。只有当状态工具报告无活跃 session 时才用直接删文件做遗留清理。
 
-### 3B. Smart Cancellation (default)
+### 3B. 智能取消（默认）
 
-#### If Team Active (tmux-based)
+#### 若 Team 活跃（基于 tmux）
 
-Teams are detected by checking for config files in `.omk/state/team/`:
+通过检查 `.omk/state/team/` 下的配置文件检测 team：
 
 ```bash
 # Check for active teams
 ls .omk/state/team/*/config.json 2>/dev/null
 ```
 
-**Two-pass cancellation protocol:**
+**两遍取消协议：**
 
-**Pass 1: Graceful Shutdown**
+**Pass 1：优雅关停**
 ```
 For each team found in .omk/state/team/:
   1. Read config.json to get team_name and workers list
@@ -172,7 +169,7 @@ For each team found in .omk/state/team/:
      d. If still alive: mark as unresponsive
 ```
 
-**Pass 2: Force Kill**
+**Pass 2：强制 kill**
 ```
 After graceful pass:
   1. For each remaining alive worker:
@@ -182,7 +179,7 @@ After graceful pass:
   2. Destroy the tmux session: tmux kill-session -t omx-team-{name}
 ```
 
-**Cleanup:**
+**清理：**
 ```
   1. Strip AGENTS.md team worker overlay (<!-- OMK:TEAM:WORKER:START/END -->)
   2. Remove team state directory: rm -rf .omk/state/team/{name}/
@@ -190,7 +187,7 @@ After graceful pass:
   4. Emit structured cancel report
 ```
 
-**Structured Cancel Report:**
+**结构化取消报告：**
 ```
 Team "{team_name}" cancelled:
   - Workers signaled: N
@@ -200,20 +197,20 @@ Team "{team_name}" cancelled:
   - State cleaned up: yes/no
 ```
 
-**Implementation note:** The cancel skill is executed by the LLM, not as a bash script. When you detect an active team:
-1. Check `.omk/state/team/*/config.json` for active teams
-2. For each worker in config.workers, write shutdown inbox and send trigger
-3. Wait briefly for workers to exit (15s timeout)
-4. Force kill remaining workers via tmux
-5. Destroy tmux session: `tmux kill-session -t omx-team-{name}`
-6. Strip AGENTS.md overlay
-7. Remove state: `rm -rf .omk/state/team/{name}/`
+**实现备注：** cancel skill 是由 LLM 执行的，不是 bash 脚本。当你检测到活跃 team 时：
+1. 检查 `.omk/state/team/*/config.json` 找活跃 team
+2. 对 config.workers 中的每个 worker，写关停 inbox 并发触发
+3. 短暂等待 worker 退出（15s 超时）
+4. 通过 tmux 强制 kill 剩余 worker
+5. 销毁 tmux 会话：`tmux kill-session -t omx-team-{name}`
+6. 剥离 AGENTS.md overlay
+7. 删除状态：`rm -rf .omk/state/team/{name}/`
 8. `state_clear(mode="team")`
-9. Report structured summary to user
+9. 向用户报告结构化总结
 
-#### If Autopilot Active
+#### 若 Autopilot 活跃
 
-Call `cancelAutopilot()` from `src/hooks/autopilot/cancel.ts:27-78`:
+调用 `src/hooks/autopilot/cancel.ts:27-78` 的 `cancelAutopilot()`：
 
 ```bash
 # Autopilot handles its own cleanup + ralph + ultraqa
@@ -252,9 +249,9 @@ if [[ -f .omk/state/autopilot-state.json ]]; then
 fi
 ```
 
-#### If Ralph Active (but not Autopilot)
+#### 若 Ralph 活跃（且 Autopilot 未活跃）
 
-Call `clearRalphState()` + `clearLinkedUltraworkState()` from `src/hooks/ralph-loop/index.ts:147-182`:
+调用 `src/hooks/ralph-loop/index.ts:147-182` 的 `clearRalphState()` + `clearLinkedUltraworkState()`：
 
 ```bash
 if [[ -f .omk/state/ralph-state.json ]]; then
@@ -283,9 +280,9 @@ if [[ -f .omk/state/ralph-state.json ]]; then
 fi
 ```
 
-#### If Ultrawork Active (standalone, not linked)
+#### 若 Ultrawork 活跃（独立，未 linked）
 
-Call `deactivateUltrawork()` from `src/hooks/ultrawork/index.ts:150-173`:
+调用 `src/hooks/ultrawork/index.ts:150-173` 的 `deactivateUltrawork()`：
 
 ```bash
 if [[ -f .omk/state/ultrawork-state.json ]]; then
@@ -305,9 +302,9 @@ if [[ -f .omk/state/ultrawork-state.json ]]; then
 fi
 ```
 
-#### If UltraQA Active (standalone)
+#### 若 UltraQA 活跃（独立）
 
-Call `clearUltraQAState()` from `src/hooks/ultraqa/index.ts:107-120`:
+调用 `src/hooks/ultraqa/index.ts:107-120` 的 `clearUltraQAState()`：
 
 ```bash
 if [[ -f .omk/state/ultraqa-state.json ]]; then
@@ -316,7 +313,7 @@ if [[ -f .omk/state/ultraqa-state.json ]]; then
 fi
 ```
 
-#### No Active Modes
+#### 没有活跃模式
 
 ```bash
 echo "No active oh-my-kimi modes detected."
@@ -330,19 +327,19 @@ echo ""
 echo "Use --force to clear all state files anyway."
 ```
 
-## Implementation Notes
+## 实现备注
 
-The cancel skill runs as follows:
-1. Parse the `--force` / `--all` flags, tracking whether cleanup should span every session or stay scoped to the current session id.
-2. Use `state_list_active` to enumerate known session ids and `state_get_status` to learn the active mode (`autopilot`, `ralph`, `ultrawork`, etc.) for each session.
-3. When operating in default mode, call `state_clear` with that session_id to remove only the session’s files, then run mode-specific cleanup (autopilot → ralph → …) based on the state tool signals.
-4. In force mode, iterate every active session, call `state_clear` per session, then run a global `state_clear` without `session_id` to drop legacy files (`.omk/state/*.json`, compatibility artifacts) and report success. Swarm remains a shared SQLite/marker mode outside session scoping.
-5. Team artifacts (`.omk/state/team/*/`, tmux sessions matching `omx-team-*`) remain best-effort cleanup items invoked during the legacy/global pass.
+cancel skill 的执行流程：
+1. 解析 `--force` / `--all` 标志，跟踪清理范围是覆盖所有 session 还是仅限当前 session id。
+2. 用 `state_list_active` 枚举已知 session id，用 `state_get_status` 了解每个 session 上活跃的模式（`autopilot`、`ralph`、`ultrawork` 等）。
+3. 默认模式下，按 session_id 调用 `state_clear` 仅删除该 session 文件，再根据状态工具的信号按 mode-specific 顺序（autopilot → ralph → …）做清理。
+4. force 模式下，遍历每个活跃 session、逐个 `state_clear`，然后跑一次无 `session_id` 的全局 `state_clear` 删除旧文件（`.omk/state/*.json`、兼容工件），并汇报结果。Swarm 仍是 session 作用域外的共享 SQLite / marker 模式。
+5. Team 工件（`.omk/state/team/*/`、匹配 `omx-team-*` 的 tmux 会话）作为遗留 / 全局阶段的 best-effort 清理项。
 
-State tools always honor the `session_id` argument, so even force mode still clears the session-scoped paths before deleting compatibility-only legacy state.
+状态工具始终尊重 `session_id` 参数，因此即便是 force 模式也仍先清理 session 作用域路径，再去删那些仅用于兼容的遗留状态。
 
-Mode-specific subsections below describe what extra cleanup each handler performs after the state-wide operations finish.
-## Messages Reference
+下面 mode-specific 小节描述全局状态操作完成后每个处理器还要做哪些额外清理。
+## 消息参考
 
 | Mode | Success Message |
 |------|-----------------|
@@ -359,7 +356,7 @@ Mode-specific subsections below describe what extra cleanup each handler perform
 | Force | "All oh-my-kimi modes cleared. You are free to start fresh." |
 | None | "No active oh-my-kimi modes detected." |
 
-## What Gets Preserved
+## 保留的内容
 
 | Mode | State Preserved | Resume Command |
 |------|-----------------|----------------|
@@ -372,26 +369,26 @@ Mode-specific subsections below describe what extra cleanup each handler perform
 | Pipeline | No | N/A |
 | Plan Consensus | Yes (plan file path preserved) | N/A |
 
-## Notes
+## 备注
 
-- **Dependency-aware**: Autopilot cancellation cleans up Ralph and UltraQA
-- **Link-aware**: Ralph cancellation cleans up linked Ultrawork or Ecomode
-- **Safe**: Only clears linked Ultrawork, preserves standalone Ultrawork
-- **Local-only**: Clears state files in `.omk/state/` directory
-- **Resume-friendly**: Autopilot state is preserved for seamless resume
-- **Team-aware**: Detects tmux-based teams and performs graceful shutdown with force-kill fallback
+- **依赖感知**：Autopilot 取消会清理 Ralph 与 UltraQA
+- **链路感知**：Ralph 取消会清理 linked Ultrawork 或 Ecomode
+- **安全**：仅清理 linked Ultrawork，保留独立 Ultrawork
+- **仅本地**：清理 `.omk/state/` 目录下的状态文件
+- **易于恢复**：Autopilot state 被保留，便于无缝恢复
+- **Team 感知**：检测基于 tmux 的 team，并做带强制 kill 兜底的优雅关停
 
-## Tmux Team Cleanup
+## Tmux Team 清理
 
-When cancelling team mode, the cancel skill should:
+取消 team 模式时，cancel skill 应：
 
-1. **Kill all team tmux sessions**: `tmux list-sessions -F '#{session_name}' 2>/dev/null | grep '^omx-team-'` and kill each
-2. **Remove team state directories**: `rm -rf .omk/state/team/*/`
-3. **Strip AGENTS.md overlay**: Remove content between `<!-- OMK:TEAM:WORKER:START -->` and `<!-- OMK:TEAM:WORKER:END -->`
+1. **杀掉所有 team tmux 会话**：`tmux list-sessions -F '#{session_name}' 2>/dev/null | grep '^omx-team-'`，逐个 kill
+2. **删除 team 状态目录**：`rm -rf .omk/state/team/*/`
+3. **剥离 AGENTS.md overlay**：删除 `<!-- OMK:TEAM:WORKER:START -->` 与 `<!-- OMK:TEAM:WORKER:END -->` 之间的内容
 
-### Force Clear Addition
+### Force Clear 附加
 
-When `--force` is used, also clean up:
+使用 `--force` 时同时清理：
 ```bash
 rm -rf .omk/state/team/                  # All team state
 # Kill all omx-team-* tmux sessions

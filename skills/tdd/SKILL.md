@@ -1,104 +1,104 @@
 ---
 name: tdd
-description: TDD deprecated shim
+description: TDD 兼容垫片（已弃用）
 ---
 
-# TDD deprecated
+# TDD 已弃用
 
-Hard-deprecated. Do not invoke or route this skill. Keep test-first discipline inside the active implementation workflow and verify with the project test suite.
+硬弃用，不要调用或路由本 skill。请把「测试先行」的纪律嵌入到正在使用的实现工作流里，并用项目自身的测试套件做验证。
 
-## The Iron Law
+## 铁律
 
-**NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST**
+**没有先写好的失败测试，就不写生产代码**
 
-Write code before test? DELETE IT. Start over. No exceptions.
+先写代码后写测试？删掉，重来。无例外。
 
-## Red-Green-Refactor Cycle
+## Red-Green-Refactor 循环
 
-### 1. RED: Write Failing Test
-- Write test for the NEXT piece of functionality
-- Run test - MUST FAIL
-- If it passes, your test is wrong
+### 1. RED：写失败的测试
+- 为下一小块功能写测试
+- 跑测试 —— **必须失败**
+- 如果它过了，说明测试写错了
 
-### 2. GREEN: Minimal Implementation
-- Write ONLY enough code to pass the test
-- No extras. No "while I'm here."
-- Run test - MUST PASS
+### 2. GREEN：最小实现
+- **只**写让测试通过所需的最少代码
+- 不加额外的。不「顺手做点别的」。
+- 跑测试 —— **必须通过**
 
-### 3. REFACTOR: Clean Up
-- Improve code quality
-- Run tests after EVERY change
-- Must stay green
+### 3. REFACTOR：清理
+- 改善代码质量
+- 每改一处都要跑测试
+- 必须保持绿
 
 ### 4. REPEAT
-- Next failing test
-- Continue cycle
+- 下一条失败测试
+- 继续循环
 
-## Enforcement Rules
+## 强制规则
 
-| If You See | Action |
+| 看到这种情况 | 行动 |
 |------------|--------|
-| Code written before test | STOP. Delete code. Write test first. |
-| Test passes on first run | Test is wrong. Fix it to fail first. |
-| Multiple features in one cycle | STOP. One test, one feature. |
-| Skipping refactor | Go back. Clean up before next feature. |
+| 先写代码再写测试 | STOP。删除代码。先写测试。 |
+| 测试首次运行就通过 | 测试是错的。把它改成会失败。 |
+| 一个循环里塞多个特性 | STOP。一次一个测试，一个特性。 |
+| 跳过 refactor | 回去清理，然后再做下一个特性。 |
 
-## Commands
+## 命令
 
-Before each implementation:
+每次实现前：
 ```bash
-# Run the project's test command - should have ONE new failure
+# 跑项目的测试命令 —— 应该有一个新失败
 ```
 
-After implementation:
+实现后：
 ```bash
-# Run the project's test command - new test should pass, all others still pass
+# 跑项目的测试命令 —— 新测试应该通过，旧测试仍然全过
 ```
 
-## Output Format
+## 输出格式
 
-When guiding TDD:
+引导 TDD 时：
 
 ```
-## TDD Cycle: [Feature Name]
+## TDD Cycle: [特性名]
 
 ### RED Phase
-Test: [test code]
-Expected failure: [what error you expect]
-Actual: [run result showing failure]
+Test: [测试代码]
+Expected failure: [你预期的报错]
+Actual: [运行结果，显示失败]
 
 ### GREEN Phase
-Implementation: [minimal code]
-Result: [run result showing pass]
+Implementation: [最小代码]
+Result: [运行结果，显示通过]
 
 ### REFACTOR Phase
-Changes: [what was cleaned up]
-Result: [tests still pass]
+Changes: [清理了什么]
+Result: [测试仍然通过]
 ```
 
-## External Model Consultation (Preferred)
+## 外部模型咨询（推荐）
 
-The tdd-guide agent SHOULD consult Codex for test strategy validation.
+tdd-guide agent **应该**找 Codex 做测试策略校验。
 
-### Protocol
-1. **Form your OWN test strategy FIRST** - Design tests independently
-2. **Consult for validation** - Cross-check test coverage strategy
-3. **Critically evaluate** - Never blindly adopt external suggestions
-4. **Graceful fallback** - Never block if tools unavailable
+### 协议
+1. **先独立形成自己的测试策略** —— 独立设计测试
+2. **找外部模型校验** —— 交叉检查测试覆盖策略
+3. **批判性评估** —— 永远不要盲目采纳外部建议
+4. **优雅回退** —— 工具不可用时绝不阻塞
 
-### When to Consult
-- Complex domain logic requiring comprehensive test coverage
-- Edge case identification for critical paths
-- Test architecture for large features
-- Unfamiliar testing patterns
+### 何时咨询
+- 复杂业务逻辑，需要全面测试覆盖
+- 关键路径的边界条件识别
+- 大型特性的测试架构
+- 不熟悉的测试模式
 
-### When to Skip
-- Simple unit tests
-- Well-understood testing patterns
-- Time-critical TDD cycles
-- Small, isolated functionality
+### 何时跳过
+- 简单单元测试
+- 已经熟悉的测试模式
+- 时间紧迫的 TDD 循环
+- 小而隔离的功能
 
-### Tool Usage
-Prefer native `test-engineer` consultation or CLI-backed ask surfaces when available. Optional MCP compatibility ask tools may be used only when already enabled. If consultation tools are unavailable, fall back to the `test-engineer` agent.
+### 工具使用
+优先使用原生 `test-engineer` 咨询或可用的 CLI 支持的 ask 接口。可选的 MCP 兼容 ask 工具仅在已启用时使用。如果咨询工具不可用，回退到 `test-engineer` agent。
 
-**Remember:** The discipline IS the value. Shortcuts destroy the benefit.
+**记住：** 纪律本身就是价值。走捷径会摧毁好处。

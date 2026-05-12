@@ -1,37 +1,37 @@
 ---
 name: verify
-description: Verify that a change really works before you claim completion
+description: 在声称完成之前，验证一处改动是否真的能跑通
 ---
 
 # Verify
 
-Use this skill when the user wants confidence that a feature, fix, or refactor actually works.
+当用户希望确认某个功能、修复或重构真的能工作时，使用本 skill。
 
-## Goal
-Turn vague “it should work” claims into concrete evidence.
+## 目标
+把模糊的「应该能跑」变成具体的证据。
 
-## Workflow
-1. Identify the exact behavior that must be proven.
-2. Prefer existing tests first.
-3. If coverage is missing, run the narrowest direct verification commands available.
-4. If direct automation is not enough, describe the manual validation steps and gather concrete observable evidence.
-5. Report only what was actually verified.
+## 工作流
+1. 明确必须被证明的具体行为。
+2. 优先用已有测试。
+3. 如果覆盖不足，跑最窄的直接验证命令。
+4. 如果自动化还不够，描述手动验证步骤并收集可观察的具体证据。
+5. 只报告真正被验证过的内容。
 
-## Verification order
-1. Existing tests
-2. Typecheck / build
-3. Narrow direct command checks
-4. Manual or interactive validation
+## 验证顺序
+1. 已有测试
+2. typecheck / build
+3. 收窄的直接命令检查
+4. 手动或交互式验证
 
-## Rules
-- Do not say a change is complete without evidence.
-- If a check fails, include the failure clearly.
-- If no realistic verification path exists, say that explicitly instead of bluffing.
-- Prefer concise evidence summaries over noisy logs.
+## 规则
+- 没有证据，不要说一处改动「完成了」。
+- 检查失败时，明确把失败贴出来。
+- 如果根本没有现实的验证路径，明说，不要虚张声势。
+- 优先给简洁的证据摘要，而不是嘈杂的日志。
 
-## Output
-- What was verified
-- Which commands/tests were run
-- What passed
-- What failed or remains unverified
+## 输出
+- 验证了什么
+- 跑了哪些命令 / 测试
+- 哪些通过了
+- 哪些失败或仍未验证
 

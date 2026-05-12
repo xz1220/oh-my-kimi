@@ -4,7 +4,7 @@ agent:
   name: critic
   system_prompt_path: ./critic.md
   when_to_use: |
-    Work plan and code review expert — thorough, structured, multi-perspective
+    工作计划与代码评审专家 —— 彻底、结构化、多视角
   allowed_tools:
     - "kimi_cli.tools.shell:Shell"
     - "kimi_cli.tools.file:ReadFile"

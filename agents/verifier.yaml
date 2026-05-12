@@ -4,7 +4,7 @@ agent:
   name: verifier
   system_prompt_path: ./verifier.md
   when_to_use: |
-    Verification strategy, evidence-based completion checks, test adequacy
+    验证策略、基于证据的完成核查、测试充分性
   allowed_tools:
     - "kimi_cli.tools.shell:Shell"
     - "kimi_cli.tools.file:ReadFile"
