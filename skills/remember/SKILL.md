@@ -1,41 +1,41 @@
 ---
 name: remember
-description: Review reusable project knowledge and decide what belongs in project memory, notepad, or durable docs
+description: 评审可复用的项目知识，决定该归入项目记忆、notepad 还是长期文档
 ---
 
 # Remember
 
-Use this skill when the user wants to preserve or organize useful knowledge discovered during a session.
+当用户希望保存或整理本次会话中发现的有用知识时，使用本 skill。
 
-## Goal
-Promote durable, reusable knowledge into the right memory surface instead of leaving it buried in chat history.
+## 目标
+把可持久、可复用的知识晋升到合适的记忆载体，而不是把它埋没在聊天历史里。
 
-## Memory surfaces
-- **Project memory** — durable team/project knowledge
-- **Notepad priority** — short high-signal context for the next turns
-- **Notepad working** — temporary active-session notes
-- **Docs / AGENTS / CLAUDE files** — durable instructions and conventions when they truly belong there
+## 记忆载体
+- **Project memory** —— 团队/项目层面的持久知识
+- **Notepad priority** —— 接下来几轮需要用到的高信息量短上下文
+- **Notepad working** —— 临时的活跃会话笔记
+- **Docs / AGENTS / CLAUDE files** —— 真正应该长期沉淀的指令与约定
 
-## Workflow
-1. Gather the relevant session findings.
-2. Classify each item:
-   - durable project fact
-   - temporary working note
-   - operator preference or instruction
-   - duplicate / stale / conflicting information
-3. Propose the best destination for each item.
-4. Write or update only the appropriate memory surface.
-5. Call out duplicates or conflicts that should be cleaned up.
+## 工作流
+1. 收集本次会话相关的发现。
+2. 对每条信息分类：
+   - 项目级持久事实
+   - 临时工作笔记
+   - 操作者偏好或指令
+   - 重复 / 过时 / 冲突的信息
+3. 为每条信息提出最佳归宿。
+4. 只写入或更新对应的记忆载体。
+5. 指出应当清理的重复或冲突。
 
-## Rules
-- Do not dump everything into one store.
-- Prefer project memory for durable team knowledge.
-- Prefer notepad for short-lived working context.
-- Keep entries concise and actionable.
-- If something is uncertain, mark it as uncertain rather than storing it as fact.
+## 规则
+- 不要把所有东西都塞到同一个仓库。
+- 团队级持久知识优先放 project memory。
+- 短期工作上下文优先放 notepad。
+- 条目保持简洁、可执行。
+- 不确定的内容标注为「不确定」，而不是当作事实保存。
 
-## Output
-- What was stored
-- Where it was stored
-- Any duplicates/conflicts found
+## 输出
+- 存了什么
+- 存到了哪里
+- 发现的重复 / 冲突
 

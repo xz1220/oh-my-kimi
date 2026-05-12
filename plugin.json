@@ -1,6 +1,6 @@
 {
   "name": "oh-my-kimi",
   "version": "0.1.0",
-  "description": "Curated skills, subagents, hooks, and MCP recommendations for Moonshot Kimi CLI; a downstream port of the oh-my-* agent harness lineage.",
+  "description": "为 Moonshot Kimi CLI 精选的 skill、subagent、hook 与 MCP 推荐配置；oh-my-* agent harness 谱系的下游移植版。",
   "tools": []
 }

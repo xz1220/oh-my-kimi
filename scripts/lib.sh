@@ -6,11 +6,11 @@ omk_log() {
 }
 
 omk_warn() {
-  printf '[oh-my-kimi] warning: %s\n' "$*" >&2
+  printf '[oh-my-kimi] 警告: %s\n' "$*" >&2
 }
 
 omk_die() {
-  printf '[oh-my-kimi] error: %s\n' "$*" >&2
+  printf '[oh-my-kimi] 错误: %s\n' "$*" >&2
   exit 1
 }
 
@@ -23,7 +23,7 @@ omk_backup_file() {
   if [ -f "$file" ]; then
     local backup="${file}.omk-backup-$(date +%Y%m%d%H%M%S)"
     cp "$file" "$backup"
-    omk_log "backed up $file to $backup"
+    omk_log "已将 $file 备份到 $backup"
   fi
 }
 
@@ -46,12 +46,11 @@ path.write_text(text.rstrip() + "\n", encoding="utf-8")
 PY
 }
 
-# Strip a top-level `hooks = ...` inline array assignment from a Kimi config
-# before we append `[[hooks]]` array-of-tables entries. TOML disallows mixing
-# inline-array and array-of-tables forms for the same key, and Kimi CLI ships
-# a default `hooks = []` line that triggers a "Key 'hooks' already exists"
-# parser error otherwise. Safe because `hooks = []` means "no hooks" — the
-# `[[hooks]]` entries we add below carry the real configuration.
+# 在追加 `[[hooks]]` array-of-tables 条目之前，先从 Kimi 配置里剥掉顶层的
+# `hooks = ...` 内联数组赋值。TOML 不允许同一个 key 同时用 inline-array 和
+# array-of-tables 两种写法，而 Kimi CLI 默认会带一行 `hooks = []`，否则解析
+# 时会报 "Key 'hooks' already exists"。这样做是安全的：`hooks = []` 含义是
+# 「没有 hook」——下面我们追加的 `[[hooks]]` 条目才承载真正的配置。
 omk_strip_inline_hooks_array() {
   local file="$1"
   [ -f "$file" ] || return 0
@@ -63,13 +62,13 @@ import sys
 path = Path(sys.argv[1])
 text = path.read_text(encoding="utf-8")
 
-# Only strip when the line is at top level (no leading whitespace) and the
-# RHS is an inline array (not a [[hooks]] table-array header). We match the
-# common `hooks = []`, `hooks=[]`, and `hooks = [ ... ]` shapes.
+# 仅当该行位于顶层（无前导空白）且右侧是 inline array（不是 [[hooks]]
+# table-array header）时才剥除。匹配常见的 `hooks = []`、`hooks=[]`、
+# `hooks = [ ... ]` 几种写法。
 pattern = re.compile(r"^[ \t]*hooks[ \t]*=[ \t]*\[[^\n\[]*\][ \t]*\n", re.MULTILINE)
 new_text, n = pattern.subn("", text)
 if n:
     path.write_text(new_text, encoding="utf-8")
-    print(f"[oh-my-kimi] stripped {n} inline 'hooks = [...]' line(s) from {path}")
+    print(f"[oh-my-kimi] 已从 {path} 剥除 {n} 行 inline 'hooks = [...]'")
 PY
 }

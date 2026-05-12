@@ -4,7 +4,7 @@ agent:
   name: debugger
   system_prompt_path: ./debugger.md
   when_to_use: |
-    Root-cause analysis, regression isolation, stack trace analysis, build/compilation error resolution
+    根因分析、回归定位、stack trace 分析、构建 / 编译错误处理
   allowed_tools:
     - "kimi_cli.tools.shell:Shell"
     - "kimi_cli.tools.file:ReadFile"

@@ -4,7 +4,7 @@ agent:
   name: code-reviewer
   system_prompt_path: ./code-reviewer.md
   when_to_use: |
-    Expert code review specialist with severity-rated feedback, logic defect detection, SOLID principle checks, style, performance, and quality strategy
+    专业代码评审专家，提供按严重程度评级的反馈，涵盖逻辑缺陷检测、SOLID 原则检查、风格、性能与质量策略
   allowed_tools:
     - "kimi_cli.tools.shell:Shell"
     - "kimi_cli.tools.file:ReadFile"

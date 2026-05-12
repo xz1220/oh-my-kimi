@@ -4,7 +4,7 @@ agent:
   name: document-specialist
   system_prompt_path: ./document-specialist.md
   when_to_use: |
-    External Documentation & Reference Specialist
+    外部文档与参考资料专家
   allowed_tools:
     - "kimi_cli.tools.shell:Shell"
     - "kimi_cli.tools.file:ReadFile"

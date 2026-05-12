@@ -1,27 +1,27 @@
 ---
 name: visual-verdict
-description: Structured visual QA verdict for screenshot-to-reference comparisons
+description: 截图与参考图对比的结构化视觉 QA 判定
 level: 2
 ---
 
 <Purpose>
-Use this skill to compare generated UI screenshots against one or more reference images and return a strict JSON verdict that can drive the next edit iteration.
+使用本 skill 把生成的 UI 截图与一张或多张参考图对比，返回严格的 JSON 判定，用来驱动下一轮编辑。
 </Purpose>
 
 <Use_When>
-- The task includes visual fidelity requirements (layout, spacing, typography, component styling)
-- You have a generated screenshot and at least one reference image
-- You need deterministic pass/fail guidance before continuing edits
+- 任务包含视觉保真度要求（布局、间距、排版、组件样式）
+- 你有一张生成截图和至少一张参考图
+- 在继续编辑前需要确定性的 pass/fail 指引
 </Use_When>
 
 <Inputs>
-- `reference_images[]` (one or more image paths)
-- `generated_screenshot` (current output image)
-- Optional: `category_hint` (e.g., `hackernews`, `sns-feed`, `dashboard`)
+- `reference_images[]`（一张或多张参考图路径）
+- `generated_screenshot`（当前输出图）
+- 可选：`category_hint`（例如 `hackernews`、`sns-feed`、`dashboard`）
 </Inputs>
 
 <Output_Contract>
-Return **JSON only** with this exact shape:
+**只**返回 JSON，结构必须精确如下：
 
 ```json
 {
@@ -34,25 +34,25 @@ Return **JSON only** with this exact shape:
 }
 ```
 
-Rules:
-- `score`: integer 0-100
-- `verdict`: short status (`pass`, `revise`, or `fail`)
-- `category_match`: `true` when the generated screenshot matches the intended UI category/style
-- `differences[]`: concrete visual mismatches (layout, spacing, typography, colors, hierarchy)
-- `suggestions[]`: actionable next edits tied to the differences
-- `reasoning`: 1-2 sentence summary
+规则：
+- `score`：0-100 的整数
+- `verdict`：简短状态（`pass`、`revise` 或 `fail`）
+- `category_match`：当生成截图匹配预期的 UI 类型/风格时为 `true`
+- `differences[]`：具体的视觉不匹配点（布局、间距、排版、配色、层级）
+- `suggestions[]`：与差异挂钩的可执行下一步编辑
+- `reasoning`：1-2 句话的总结
 
 <Threshold_And_Loop>
-- Target pass threshold is **90+**.
-- If `score < 90`, continue editing and rerun `/oh-my-kimi:visual-verdict` before any further visual review pass.
-- Do **not** treat the visual task as complete until the next screenshot clears the threshold.
+- 通过阈值目标为 **90+**。
+- 如果 `score < 90`，继续编辑，并在下一轮视觉评审前重新运行 `/oh-my-kimi:visual-verdict`。
+- 在下一张截图越过阈值之前，**不要**把视觉任务当作已完成。
 </Threshold_And_Loop>
 
 <Debug_Visualization>
-When mismatch diagnosis is hard:
-1. Keep `$visual-verdict` as the authoritative decision.
-2. Use pixel-level diff tooling (pixel diff / pixelmatch overlay) as a **secondary debug aid** to localize hotspots.
-3. Convert pixel diff hotspots into concrete `differences[]` and `suggestions[]` updates.
+当不匹配难以诊断时：
+1. `$visual-verdict` 仍是权威判定。
+2. 用像素级 diff 工具（pixel diff / pixelmatch overlay）作为**次级调试辅助**，定位热点。
+3. 把像素 diff 的热点转写成具体的 `differences[]` 与 `suggestions[]` 更新。
 </Debug_Visualization>
 
 <Example>

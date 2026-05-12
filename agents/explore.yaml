@@ -4,7 +4,7 @@ agent:
   name: explore
   system_prompt_path: ./explore.md
   when_to_use: |
-    Codebase search specialist for finding files and code patterns
+    用于查找文件与代码模式的代码库搜索专家
   allowed_tools:
     - "kimi_cli.tools.shell:Shell"
     - "kimi_cli.tools.file:ReadFile"

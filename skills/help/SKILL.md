@@ -1,33 +1,33 @@
 ---
 name: help
-description: Explain available oh-my-kimi agents, skills, hooks, MCP helpers, and install commands.
+description: 介绍可用的 oh-my-kimi agent、skill、hook、MCP 助手与安装命令。
 argument-hint: "[topic]"
 ---
 
 # Help
 
-Use this as the catalog help skill for oh-my-kimi.
+把这个 skill 作为 oh-my-kimi 的目录式帮助。
 
-## Core Skills
+## 核心 skill
 
-- `/skill:deep-interview`: clarify vague requests.
-- `/skill:plan`: produce an implementation plan.
-- `/skill:ralplan`: turn a task into verifiable stories.
-- `/skill:ralph`: autonomous implement-verify-fix loop.
-- `/skill:team`: coordinate Kimi subagents.
-- `/skill:verify`: completion evidence.
-- `/skill:visual-verdict`: frontend visual QA.
-- `/skill:ai-slop-cleaner`: cleanup pass.
+- `/skill:deep-interview`：澄清模糊请求。
+- `/skill:plan`：产出实现计划。
+- `/skill:ralplan`：把任务拆成可验证的 stories。
+- `/skill:ralph`：自主的 implement-verify-fix 循环。
+- `/skill:team`：协调 Kimi subagent。
+- `/skill:verify`：完成度证据。
+- `/skill:visual-verdict`：前端视觉 QA。
+- `/skill:ai-slop-cleaner`：清理 pass。
 
 ## Agent Bundle
 
-Run with the full bundle:
+用完整 bundle 跑：
 
 ```bash
 kimi-omk
 ```
 
-or directly:
+或直接：
 
 ```bash
 kimi --agent-file ~/.oh-my-kimi/agents/oh-my-kimi.yaml

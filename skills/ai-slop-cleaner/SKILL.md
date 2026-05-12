@@ -1,99 +1,99 @@
 ---
 name: ai-slop-cleaner
-description: Run an anti-slop cleanup/refactor/deslop workflow
+description: 跑反 slop 的清理 / 重构 / 去 slop 工作流
 ---
 
 # AI Slop Cleaner Skill
 
-Reduce AI-generated slop with a regression-tests-first, smell-by-smell cleanup workflow that preserves behavior and raises signal quality.
+用「回归测试先行、按 smell 逐一清理」的工作流减少 AI 生成的 slop，在保留行为的同时提升信号质量。
 
-## When to Use
+## 何时使用
 
-Use this skill when:
-- A code path works but feels bloated, noisy, repetitive, or over-abstracted
-- A user asks to “cleanup”, “refactor”, or “deslop” AI-generated output
-- Follow-up implementation left duplicate code, dead code, weak boundaries, missing tests, fallback-like code, or unnecessary wrapper layers
-- You need a disciplined cleanup workflow without broad rewrites
+下列情形使用该 skill：
+- 一段代码路径能跑通，但臃肿、嘈杂、重复或过度抽象
+- 用户要求 “cleanup”、“refactor” 或 “deslop” AI 生成的产物
+- 后续实现留下了重复代码、死代码、薄弱边界、缺失测试、fallback 类代码或不必要的包装层
+- 你需要一套有纪律的清理工作流，但不希望进行大范围重写
 
-## GPT-5.5 Guidance Alignment
+## GPT-5.5 指引对齐
 
-- Keep outputs concise and evidence-dense unless risk or the user requests more detail.
-- Treat newer user instructions as local workflow updates without discarding earlier non-conflicting constraints.
-- Keep using inspection, tests, diagnostics, and verification until the cleanup is grounded.
-- Proceed automatically through clear, reversible cleanup steps; ask only when a choice materially changes scope or behavior.
+- 输出保持简洁且信息密度高，除非有风险或用户要求更详细。
+- 把用户的新指令当作本地工作流更新，但不丢弃此前不冲突的约束。
+- 持续使用检查、测试、diagnostics 与验证，直到清理工作有据可依。
+- 在清晰、可逆的清理步骤上自动推进；只在选择会实质改变范围或行为时才询问。
 
-## Scoped File Lists and Ralph Workflow
+## Scoped 文件清单与 Ralph 工作流
 
-- This skill can accept a **file list scope** instead of a whole feature area.
-- When the caller provides a changed-files list (for example, Ralph session-owned edits), keep the cleanup strictly bounded to those files.
-- In the **Ralph workflow**, the mandatory deslop pass should run this skill on Ralph's changed files only, in standard mode unless the caller explicitly requests otherwise.
+- 该 skill 可以接受一份**文件清单 scope**，而不是整个功能区域。
+- 当调用方提供一份变更文件列表（例如 Ralph 会话拥有的变更）时，把清理严格限制在这些文件内。
+- 在 **Ralph 工作流**中，强制的 deslop pass 应只对 Ralph 的变更文件运行该 skill，除非调用方明确要求否则使用标准模式。
 
-## Procedure
+## 流程
 
-1. **Lock behavior with regression tests first**
-   - Identify the behavior that must not change
-   - Add or run targeted regression tests before editing cleanup candidates
-   - If behavior is currently untested, create the narrowest test coverage needed first
-   - For fallback-like code, cover the primary path and any preserved compatibility/fail-safe fallback before cleanup
+1. **先用回归测试锁定行为**
+   - 识别绝对不能改变的行为
+   - 在编辑清理候选之前，先添加或运行有针对性的回归测试
+   - 如果当前没有测试覆盖，先做最小必要的测试覆盖
+   - 对 fallback 类代码，清理前要覆盖主路径以及任何被保留的兼容性 / fail-safe fallback
 
-2. **Create a cleanup plan before code**
-   - List the specific smells to remove
-   - Bound the pass to the requested files/scope
-   - If a file list scope is provided, keep the pass restricted to that changed-files list
-   - Include fallback findings, classifications, and escalation status in the plan
-   - Order fixes from safest/highest-signal to riskiest
-   - Do not start coding until the cleanup plan is explicit
+2. **写代码前先做清理计划**
+   - 列出要消除的具体 smell
+   - 把这一遍的范围限定在请求的文件 / scope
+   - 如果提供了文件清单 scope，就把这一遍限制在该变更文件清单上
+   - 在计划里包含 fallback 的发现、分类与升级状态
+   - 把修复顺序从最安全 / 信号最高排到最有风险
+   - 清理计划没有显式之前不要动代码
 
-3. **Inventory fallback-like code before editing**
-   - Search the requested scope for fallback-like detection signals: quick hacks, temporary workaround, temporary fallback, just bypass, just skip, fallback if it fails, swallowed errors, silent defaults, broad compatibility shims, and duplicate alternate execution paths
-   - Classify each finding before changing it:
-     - **Masking fallback slop** — hides errors or evidence, bypasses the primary contract, suppresses tests or validation, swallows failures, silently defaults, or adds untested alternate paths
-     - **Grounded compatibility/fail-safe fallback** — is scoped to an external/version/fail-safe boundary, documents the rationale, preserves failure evidence, and has regression tests for both the primary and fallback behavior
-   - Prefer root-cause repair, deletion, boundary repair, or explicit failure behavior before preserving fallback paths
-   - For broad, ambiguous, cross-layer, or architectural fallback-like code, invoke `$ralplan` for consensus resolution before edits
-   - Recursion guard: when already inside ralplan, ralph, team, or another oh-my-kimi workflow, do not spawn a nested `$ralplan`; record the finding and attach it to the active ralplan, leader, or plan handoff instead
+3. **编辑前先盘点 fallback 类代码**
+   - 在请求 scope 内搜索 fallback 类的检测信号：quick hacks、temporary workaround、temporary fallback、just bypass、just skip、fallback if it fails、被吞掉的错误、silent defaults、宽泛的兼容性 shim、重复的备用执行路径
+   - 改之前先给每个发现分类：
+     - **Masking fallback slop** —— 隐藏错误或证据、绕过主契约、压制测试或校验、吞掉失败、silent default，或新增未经测试的备用路径
+     - **Grounded compatibility/fail-safe fallback** —— 限定在外部 / 版本 / fail-safe 边界，记录了原因，保留了失败证据，并且对主路径与 fallback 行为都有回归测试
+   - 在保留 fallback 路径之前，优先选根因修复、删除、边界修复或显式失败行为
+   - 对于宽泛、模糊、跨层或带架构性的 fallback 类代码，在编辑前用 `$ralplan` 走共识决议
+   - 递归保护：如果你已经在 ralplan、ralph、team 或其他 oh-my-kimi 工作流里，不要再嵌套派出 `$ralplan`；把发现记录下来挂到当前的 ralplan、leader 或 plan 交接上即可
 
-4. **Categorize issues before editing**
-   - **Fallback-like code** — masking fallbacks, workaround branches, bypasses, swallowed errors, silent defaults, broad shims, alternate execution paths
-   - **Duplication** — repeated logic, copy-paste branches, redundant helpers
-   - **Dead code** — unused code, unreachable branches, stale flags, debug leftovers
-   - **Needless abstraction** — pass-through wrappers, speculative indirection, single-use helper layers
-   - **Boundary violations** — hidden coupling, leaky responsibilities, wrong-layer imports or side effects
-   - **UI/design slop** — review visual outputs as context-sensitive signals, not absolute bans; preserve intentional brand, design-system, accessibility, or product-context exceptions when the rationale is clear
-     - Korean body text that is too small: challenge 11-12px body copy; Korean body text generally needs 14px or larger unless a dense, accessible system explicitly supports smaller text
-     - Gratuitous depth: avoid putting box shadows on every logo, surface, card, icon, background, and step block when hierarchy or affordance does not need it
-     - Repetitive content scaffolding: trim repeated eyebrow + title + description + paragraph stacks, filler explanation text, and generic emoji badges that do not add meaning
-     - Default AI palettes: question blue/purple defaults such as #3B82F6 when there is no brand, semantic, or system rationale
-     - Over-perfect grids: avoid reflexive uniform 3-column or 4-column card grids when the product context would benefit from rhythm, asymmetry, carousel cuts, bento composition, or varied emphasis
-     - Extreme gradients: tone down "AI demo" gradients unless the brand or campaign intentionally calls for that intensity
-   - **Missing tests** — behavior not locked, weak regression coverage, gaps around edge cases
+4. **编辑前对问题分类**
+   - **Fallback 类代码** —— masking fallback、workaround 分支、bypass、被吞错误、silent default、宽泛 shim、备用执行路径
+   - **重复** —— 重复逻辑、复制粘贴的分支、冗余 helper
+   - **死代码** —— 未使用代码、不可达分支、过期 flag、调试残留
+   - **不必要的抽象** —— 直通包装、推测性间接层、一次性使用的 helper 层
+   - **边界违例** —— 隐藏耦合、责任泄漏、错层的导入或副作用
+   - **UI / 设计 slop** —— 把视觉输出当作上下文敏感的信号，而不是绝对禁令；当原因清楚时保留有意为之的品牌、设计系统、可访问性或产品上下文例外
+     - 韩语正文过小：质疑 11-12px 的正文字号；韩语正文一般需要 14px 或更大，除非有面向密集且可访问的系统明确支持更小字号
+     - 无意义的层次堆叠：避免在每个 logo、面板、卡片、图标、背景与 step block 上都加 box shadow，特别是层级或交互暗示并不需要时
+     - 重复的内容脚手架：精简反复堆叠的 eyebrow + 标题 + 描述 + 段落，以及填充式解释文字、毫无意义的通用 emoji 徽章
+     - 默认 AI 调色板：当不存在品牌、语义或系统上的理由时，质疑像 #3B82F6 这种蓝紫默认色
+     - 过度完美的网格：当产品上下文更适合节奏感、非对称、轮播切分、bento 构图或重点对比时，避免下意识地用整齐的 3 列 / 4 列卡片网格
+     - 极端渐变：除非品牌或活动有意为之，否则把那种「AI demo」级的渐变收一收
+   - **缺失测试** —— 行为没被锁定、回归覆盖薄弱、边界情况有缺口
 
-5. **Execute passes one smell at a time**
-   - **Fallback-like code resolution gate** — remove masking fallback slop, repair root causes, or escalate ambiguous cases before continuing
-   - **Pass 1: Dead code deletion**
-   - **Pass 2: Duplicate removal**
-   - **Pass 3: Naming/error handling cleanup**
-   - **Pass 4: Test reinforcement**
-   - Re-run targeted verification after each pass
-   - Avoid bundling unrelated refactors into the same edit set
+5. **一次只处理一种 smell**
+   - **Fallback 类代码决议闸口** —— 在继续之前移除 masking fallback slop、修复根因，或对模糊情况进行升级
+   - **Pass 1：删除死代码**
+   - **Pass 2：去除重复**
+   - **Pass 3：命名 / 错误处理清理**
+   - **Pass 4：测试加固**
+   - 每一遍之后重新跑定向验证
+   - 不要把无关的重构捆进同一组编辑
 
-6. **Run quality gates**
-   - Regression tests stay green
-   - Lint passes
-   - Typecheck passes
-   - Relevant unit/integration tests pass
-   - Static/security scan passes when available
-   - Diff stays minimal and scoped
-   - No new abstractions or dependencies unless explicitly required
+6. **跑质量闸口**
+   - 回归测试保持绿
+   - Lint 通过
+   - Typecheck 通过
+   - 相关单元 / 集成测试通过
+   - 当可用时跑静态 / 安全扫描
+   - diff 保持最小、范围受控
+   - 不引入新的抽象或依赖，除非明确要求
 
-7. **Finish with an evidence-dense report**
-   - Changed files
-   - Simplifications made
-   - Fallback findings, classifications, and escalation status
-   - Tests/diagnostics/build checks run
-   - UI/design reviewer checklist findings when visual/UI files were in scope
-   - Remaining risks
-   - Residual follow-ups or consciously deferred cleanup
+7. **以信息密集的报告收尾**
+   - 变更文件
+   - 做了哪些简化
+   - Fallback 发现、分类与升级状态
+   - 跑过的测试 / diagnostics / 构建检查
+   - 若 scope 含视觉 / UI 文件，给出 UI / 设计审查清单的发现
+   - 剩余风险
+   - 残留的后续项或有意推迟的清理
 
 ## Output Format
 
@@ -133,16 +133,16 @@ Remaining Risks:
 - [none or short deferred item]
 ```
 
-## Scenario Examples
+## 场景示例
 
-**Good:** The user says `continue` after tests already lock behavior and the next smell pass is clear. Continue with the next bounded cleanup pass.
+**Good：** 在测试已经锁定行为、下一遍 smell pass 也清楚的情况下，用户说 `continue`。继续做下一遍受限范围的清理 pass。
 
-**Good:** The user narrows the scope to a specific file after planning. Keep the regression-tests-first workflow, but apply the new scope locally.
+**Good：** 规划完成后用户把范围缩到具体文件。保留「回归测试先行」的工作流，但在新的局部范围内执行。
 
-**Bad:** Start rewriting architecture before protecting behavior with tests.
+**Bad：** 在用测试保护行为之前就开始重写架构。
 
-**Bad:** Collapse multiple smell categories into one large refactor with no intermediate verification.
+**Bad：** 把多个 smell 类别揉成一次大重构，期间没有任何中间验证。
 
-**Bad:** Keep a `fallback if it fails` branch that silently defaults after a swallowed error instead of fixing the root cause or making failure explicit.
+**Bad：** 保留一条 `fallback if it fails` 的分支，在吞掉错误后 silent default，而不是修根因或让失败显式化。
 
-**Good:** A version-specific compatibility shim is narrow, documented, preserves error evidence, has primary and fallback regression tests, and is reported as a grounded compatibility/fail-safe fallback.
+**Good：** 一个版本相关的兼容 shim 范围窄、有文档、保留错误证据、对主路径和 fallback 都有回归测试，并被报告为 grounded compatibility/fail-safe fallback。

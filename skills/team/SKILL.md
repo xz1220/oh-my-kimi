@@ -1,6 +1,6 @@
 ---
 name: team
-description: N coordinated agents on shared task list using Kimi CLI native teams
+description: 基于 Kimi CLI 原生 team 能力，让 N 个 agent 协调工作在共享任务列表上
 argument-hint: "[N:agent-type] [ralph] <task description>"
 aliases: []
 level: 4
@@ -8,11 +8,11 @@ level: 4
 
 # Team Skill
 
-Spawn N coordinated agents working on a shared task list using Kimi CLI's native team tools. Replaces the legacy `/swarm` skill (SQLite-based) with built-in team management, inter-agent messaging, and task dependencies -- no external dependencies required.
+利用 Kimi CLI 的原生 team 工具，派出 N 个协调工作的 agent 共享同一个任务列表。它用内置的 team 管理、agent 之间消息传递与任务依赖替代了旧版 `/swarm` skill（基于 SQLite）—— 无需任何外部依赖。
 
-The `swarm` compatibility alias was removed in #1131.
+`swarm` 兼容别名已在 #1131 中移除。
 
-## Usage
+## 用法
 
 ```
 /oh-my-kimi:team N:agent-type "task description"
@@ -20,14 +20,14 @@ The `swarm` compatibility alias was removed in #1131.
 /oh-my-kimi:team ralph "task description"
 ```
 
-### Parameters
+### 参数
 
-- **N** - Number of teammate agents (1-20). Optional; defaults to auto-sizing based on task decomposition.
-- **agent-type** - oh-my-kimi agent to spawn for the `team-exec` stage (e.g., executor, debugger, designer, codex, gemini). Optional; defaults to stage-aware routing. Use `codex` to spawn Kimi CLI workers or `gemini` for Gemini CLI workers (requires respective CLIs installed). See Stage Agent Routing below.
-- **task** - High-level task to decompose and distribute among teammates
-- **ralph** - Optional modifier. When present, wraps the team pipeline in Ralph's persistence loop (retry on failure, architect verification before completion). See Team + Ralph Composition below.
+- **N** —— 队友 agent 数量（1-20）。可选；默认基于任务分解自动定大小。
+- **agent-type** —— `team-exec` 阶段要派的 oh-my-kimi agent（如 executor、debugger、designer、codex、gemini）。可选；默认按阶段路由。用 `codex` 派 Kimi CLI worker，或用 `gemini` 派 Gemini CLI worker（需要装对应 CLI）。详见下文「Stage Agent Routing」。
+- **task** —— 待分解并分配给队友的高层任务
+- **ralph** —— 可选修饰符。出现时把 team 流水线包进 Ralph 的持久化循环（失败重试、完成前 architect 验证）。详见下文「Team + Ralph 组合」。
 
-### Examples
+### 示例
 
 ```bash
 /team 5:executor "fix all TypeScript errors across the project"
@@ -35,14 +35,14 @@ The `swarm` compatibility alias was removed in #1131.
 /team 4:designer "implement responsive layouts for all page components"
 /team "refactor the auth module with security review"
 /team ralph "build a complete REST API for user management"
-# With Kimi CLI workers (requires: npm install -g @openai/codex)
+# 使用 Kimi CLI worker（需要：npm install -g @openai/codex）
 /team 2:codex "review architecture and suggest improvements"
-# With Gemini CLI workers (requires: npm install -g @google/gemini-cli)
+# 使用 Gemini CLI worker（需要：npm install -g @google/gemini-cli）
 /team 2:gemini "redesign the UI components"
-# Mixed: Codex for backend analysis, Gemini for frontend (use /ccg instead for this)
+# 混合：后端分析用 Codex、前端用 Gemini（这种场景请改用 /ccg）
 ```
 
-## Architecture
+## 架构
 
 ```
 User: "/team 3:executor fix all TypeScript errors"
@@ -77,103 +77,103 @@ User: "/team 3:executor fix all TypeScript errors"
                       -> rm .omk/state/team-state.json
 ```
 
-**Storage layout (managed by Kimi CLI):**
+**存储布局（由 Kimi CLI 管理）：**
 ```
 ~/.claude/
   teams/fix-ts-errors/
-    config.json          # Team metadata + members array
+    config.json          # team 元数据 + 成员列表
   tasks/fix-ts-errors/
-    .lock                # File lock for concurrent access
-    1.json               # Subtask #1
-    2.json               # Subtask #2 (may be internal)
-    3.json               # Subtask #3
+    .lock                # 并发访问文件锁
+    1.json               # 子任务 #1
+    2.json               # 子任务 #2（可能是 internal）
+    3.json               # 子任务 #3
     ...
 ```
 
-## Staged Pipeline (Canonical Team Runtime)
+## 阶段化流水线（规范化的 team 运行时）
 
-Team execution follows a staged pipeline:
+team 执行遵循阶段化流水线：
 
 `team-plan -> team-prd -> team-exec -> team-verify -> team-fix (loop)`
 
 ### Stage Agent Routing
 
-Each pipeline stage uses **specialized agents** -- not just executors. The lead selects agents based on the stage and task characteristics.
+每个流水线阶段使用**专门 agent** —— 不只是 executor。Lead 基于阶段与任务特征挑 agent。
 
-| Stage | Required Agents | Optional Agents | Selection Criteria |
+| 阶段 | 必备 Agent | 可选 Agent | 选择标准 |
 |-------|----------------|-----------------|-------------------|
-| **team-plan** | `explore` (haiku), `planner` (opus) | `analyst` (opus), `architect` (opus) | Use `analyst` for unclear requirements. Use `architect` for systems with complex boundaries. |
-| **team-prd** | `analyst` (opus) | `critic` (opus) | Use `critic` to challenge scope. |
-| **team-exec** | `executor` (sonnet) | `executor` (opus), `debugger` (sonnet), `designer` (sonnet), `writer` (haiku), `test-engineer` (sonnet) | Match agent to subtask type. Use `executor` (model=opus) for complex autonomous work, `designer` for UI, `debugger` for compilation issues, `writer` for docs, `test-engineer` for test creation. |
-| **team-verify** | `verifier` (sonnet) | `test-engineer` (sonnet), `security-reviewer` (sonnet), `code-reviewer` (opus) | Always run `verifier`. Add `security-reviewer` for auth/crypto changes. Add `code-reviewer` for >20 files or architectural changes. `code-reviewer` also covers style/formatting checks. |
-| **team-fix** | `executor` (sonnet) | `debugger` (sonnet), `executor` (opus) | Use `debugger` for type/build errors and regression isolation. Use `executor` (model=opus) for complex multi-file fixes. |
+| **team-plan** | `explore` (haiku)、`planner` (opus) | `analyst` (opus)、`architect` (opus) | 需求不清时用 `analyst`。系统边界复杂时用 `architect`。 |
+| **team-prd** | `analyst` (opus) | `critic` (opus) | 用 `critic` 挑战范围。 |
+| **team-exec** | `executor` (sonnet) | `executor` (opus)、`debugger` (sonnet)、`designer` (sonnet)、`writer` (haiku)、`test-engineer` (sonnet) | 按子任务类型匹配 agent。复杂自主工作用 `executor`（model=opus），UI 用 `designer`，编译问题用 `debugger`，文档用 `writer`，测试创建用 `test-engineer`。 |
+| **team-verify** | `verifier` (sonnet) | `test-engineer` (sonnet)、`security-reviewer` (sonnet)、`code-reviewer` (opus) | 始终跑 `verifier`。鉴权 / 加密改动加 `security-reviewer`。改动 >20 个文件或架构性改动加 `code-reviewer`。`code-reviewer` 也覆盖风格 / 格式检查。 |
+| **team-fix** | `executor` (sonnet) | `debugger` (sonnet)、`executor` (opus) | 类型 / 构建错误与回归隔离用 `debugger`。复杂多文件修复用 `executor`（model=opus）。 |
 
-**Routing rules:**
+**路由规则：**
 
-1. **The lead picks agents per stage, not the user.** The user's `N:agent-type` parameter only overrides the `team-exec` stage worker type. All other stages use stage-appropriate specialists.
-2. **Specialist agents complement executor agents.** Route analysis/review to architect/critic Kimi subagents and UI work to designer agents. Tmux CLI workers are one-shot and don't participate in team communication.
-3. **Cost mode affects model tier.** In downgrade: `opus` agents to `sonnet`, `sonnet` to `haiku` where quality permits. `team-verify` always uses at least `sonnet`.
-4. **Risk level escalates review.** Security-sensitive or >20 file changes must include `security-reviewer` + `code-reviewer` (opus) in `team-verify`.
+1. **Lead 按阶段挑 agent，不是用户挑。** 用户的 `N:agent-type` 参数只覆盖 `team-exec` 阶段的 worker 类型。其他阶段都用对应的专门 agent。
+2. **专家 agent 补充 executor agent。** 把分析 / 评审路由到 architect / critic 这类 Kimi subagent，把 UI 工作路由到 designer agent。Tmux CLI worker 是一次性的，不参与 team 通信。
+3. **Cost 模式影响模型等级。** 降级时：`opus` agent 降为 `sonnet`，`sonnet` 在质量允许时降为 `haiku`。`team-verify` 至少使用 `sonnet`。
+4. **风险等级升级评审。** 安全敏感或 >20 个文件的改动必须在 `team-verify` 中包含 `security-reviewer` + `code-reviewer`（opus）。
 
-### Stage Entry/Exit Criteria
+### 阶段进入 / 退出标准
 
 - **team-plan**
-  - Entry: Team invocation is parsed and orchestration starts.
-  - Agents: `explore` scans codebase, `planner` creates task graph, optionally `analyst`/`architect` for complex tasks.
-  - Exit: decomposition is complete and a runnable task graph is prepared.
+  - 进入：team 调用被解析、编排开始。
+  - Agent：`explore` 扫代码库、`planner` 创建任务图，复杂任务可选 `analyst` / `architect`。
+  - 退出：分解完成，可运行的任务图就绪。
 - **team-prd**
-  - Entry: scope is ambiguous or acceptance criteria are missing.
-  - Agents: `analyst` extracts requirements, optionally `critic`.
-  - Exit: acceptance criteria and boundaries are explicit.
+  - 进入：范围模糊或验收标准缺失。
+  - Agent：`analyst` 抽取需求，可选 `critic`。
+  - 退出：验收标准与边界显式。
 - **team-exec**
-  - Entry: `TeamCreate`, `TaskCreate`, assignment, and worker spawn are complete.
-  - Agents: workers spawned as the appropriate specialist type per subtask (see routing table).
-  - Exit: execution tasks reach terminal state for the current pass.
+  - 进入：`TeamCreate`、`TaskCreate`、分配与 worker 启动完成。
+  - Agent：按子任务类型派出合适的专家类型 worker（见路由表）。
+  - 退出：本轮执行任务进入终态。
 - **team-verify**
-  - Entry: execution pass finishes.
-  - Agents: `verifier` + task-appropriate reviewers (see routing table).
-  - Exit (pass): verification gates pass with no required follow-up.
-  - Exit (fail): fix tasks are generated and control moves to `team-fix`.
+  - 进入：执行轮结束。
+  - Agent：`verifier` + 任务相应的 reviewer（见路由表）。
+  - 退出（pass）：验证门通过，无必需后续。
+  - 退出（fail）：生成 fix 任务，控制权移交给 `team-fix`。
 - **team-fix**
-  - Entry: verification found defects/regressions/incomplete criteria.
-  - Agents: `executor`/`debugger` depending on defect type.
-  - Exit: fixes are complete and flow returns to `team-exec` then `team-verify`.
+  - 进入：验证发现缺陷 / 回归 / 不完整标准。
+  - Agent：按缺陷类型用 `executor` 或 `debugger`。
+  - 退出：修复完成，流程回到 `team-exec`，再到 `team-verify`。
 
-### Verify/Fix Loop and Stop Conditions
+### Verify / Fix 循环与停止条件
 
-Continue `team-exec -> team-verify -> team-fix` until:
-1. verification passes and no required fix tasks remain, or
-2. work reaches an explicit terminal blocked/failed outcome with evidence.
+继续 `team-exec -> team-verify -> team-fix`，直到：
+1. 验证通过且没有必需的 fix 任务剩余，或
+2. 工作到达显式终态 blocked / failed 并附证据。
 
-`team-fix` is bounded by max attempts. If fix attempts exceed the configured limit, transition to terminal `failed` (no infinite loop).
+`team-fix` 有最大尝试次数限制。如果 fix 尝试超过配置上限，转入终态 `failed`（不无限循环）。
 
-### Stage Handoff Convention
+### 阶段移交约定
 
-When transitioning between stages, important context — decisions made, alternatives rejected, risks identified — lives only in the lead's conversation history. If the lead's context compacts or agents restart, this knowledge is lost.
+阶段之间过渡时，重要上下文 —— 做出的决策、被驳回的替代方案、识别的风险 —— 只存在于 lead 的对话历史里。如果 lead 上下文被压缩或 agent 重启，这些知识就丢了。
 
-**Each completing stage MUST produce a handoff document before transitioning.**
+**每个完成的阶段在过渡之前必须生成一份 handoff 文档。**
 
-The lead writes handoffs to `.omk/handoffs/<stage-name>.md`.
+Lead 把 handoff 写到 `.omk/handoffs/<stage-name>.md`。
 
-#### Handoff Format
+#### Handoff 格式
 
 ```markdown
 ## Handoff: <current-stage> → <next-stage>
-- **Decided**: [key decisions made in this stage]
-- **Rejected**: [alternatives considered and why they were rejected]
-- **Risks**: [identified risks for the next stage]
-- **Files**: [key files created or modified]
-- **Remaining**: [items left for the next stage to handle]
+- **Decided**: [本阶段做出的关键决策]
+- **Rejected**: [被考虑但被驳回的替代方案及原因]
+- **Risks**: [识别的下阶段风险]
+- **Files**: [创建或修改的关键文件]
+- **Remaining**: [留给下阶段处理的事项]
 ```
 
-#### Handoff Rules
+#### Handoff 规则
 
-1. **Lead reads previous handoff BEFORE spawning next stage's agents.** The handoff content is included in the next stage's agent spawn prompts, ensuring agents start with full context.
-2. **Handoffs accumulate.** The verify stage can read all prior handoffs (plan → prd → exec) for full decision history.
-3. **On team cancellation, handoffs survive** in `.omk/handoffs/` for session resume. They are not deleted by `TeamDelete`.
-4. **Handoffs are lightweight.** 10-20 lines max. They capture decisions and rationale, not full specifications (those live in deliverable files like DESIGN.md).
+1. **Lead 在派下阶段 agent 之前先读上一个 handoff。** handoff 内容会被注入下阶段 agent 的 spawn prompt，确保 agent 带着完整上下文起步。
+2. **Handoff 是累加的。** verify 阶段可以读取此前所有 handoff（plan → prd → exec）查看完整决策历史。
+3. **team 取消时 handoff 仍保留**在 `.omk/handoffs/`，便于会话恢复。`TeamDelete` 不会删除它们。
+4. **Handoff 是轻量的。** 最多 10-20 行。它记录决策与理由，不是完整规格（完整规格放在 DESIGN.md 这样的交付文件里）。
 
-#### Example
+#### 示例
 
 ```markdown
 ## Handoff: team-plan → team-exec
@@ -184,32 +184,32 @@ The lead writes handoffs to `.omk/handoffs/<stage-name>.md`.
 - **Remaining**: Database migration scripts, CI/CD pipeline config, Redis provisioning.
 ```
 
-### Resume and Cancel Semantics
+### Resume 与 Cancel 语义
 
-- **Resume:** restart from the last non-terminal stage using staged state + live task status. Read `.omk/handoffs/` to recover stage transition context.
-- **Cancel:** `/oh-my-kimi:cancel` requests teammate shutdown, waits for responses (best effort), marks phase `cancelled` with `active=false`, captures cancellation metadata, then deletes team resources and clears/preserves Team state per policy. Handoff files in `.omk/handoffs/` are preserved for potential resume.
-- Terminal states are `complete`, `failed`, and `cancelled`.
+- **Resume：** 使用阶段化状态 + 实时任务状态从最近的非终态阶段重启。读 `.omk/handoffs/` 恢复阶段过渡上下文。
+- **Cancel：** `/oh-my-kimi:cancel` 请求队友 shutdown，等待回应（尽力而为），把 phase 标 `cancelled` 并 `active=false`，记录取消元数据，然后删除 team 资源并按策略清理 / 保留 Team 状态。`.omk/handoffs/` 中的 handoff 文件保留以便恢复。
+- 终态为 `complete`、`failed` 与 `cancelled`。
 
-## Workflow
+## 工作流
 
-### Phase 1: Parse Input
+### Phase 1：解析输入
 
-- Extract **N** (agent count), validate 1-20
-- Extract **agent-type**, validate it maps to a known oh-my-kimi subagent
-- Extract **task** description
+- 抽取 **N**（agent 数量），校验 1-20
+- 抽取 **agent-type**，校验它映射到已知的 oh-my-kimi subagent
+- 抽取 **task** 描述
 
-### Phase 2: Analyze & Decompose
+### Phase 2：分析与分解
 
-Use `explore` or `architect` (via MCP or agent) to analyze the codebase and break the task into N subtasks:
+用 `explore` 或 `architect`（通过 MCP 或 agent）分析代码库，把任务拆成 N 个子任务：
 
-- Each subtask should be **file-scoped** or **module-scoped** to avoid conflicts
-- Subtasks must be independent or have clear dependency ordering
-- Each subtask needs a concise `subject` and detailed `description`
-- Identify dependencies between subtasks (e.g., "shared types must be fixed before consumers")
+- 每个子任务应当 **file-scoped** 或 **module-scoped**，避免冲突
+- 子任务必须互相独立，或具有清晰的依赖顺序
+- 每个子任务需要简洁的 `subject` 与详细的 `description`
+- 识别子任务之间的依赖（例如「共享类型必须先修，消费者才能改」）
 
-### Phase 3: Create Team
+### Phase 3：创建 Team
 
-Call `TeamCreate` with a slug derived from the task:
+用从任务派生的 slug 调用 `TeamCreate`：
 
 ```json
 {
@@ -218,7 +218,7 @@ Call `TeamCreate` with a slug derived from the task:
 }
 ```
 
-**Response:**
+**响应：**
 ```json
 {
   "team_name": "fix-ts-errors",
@@ -227,9 +227,9 @@ Call `TeamCreate` with a slug derived from the task:
 }
 ```
 
-The current session becomes the team lead (`team-lead@fix-ts-errors`).
+当前会话成为 team lead（`team-lead@fix-ts-errors`）。
 
-Write oh-my-kimi state using the `state_write` MCP tool for proper session-scoped persistence:
+用 `state_write` MCP 工具写入 oh-my-kimi 状态，做会话级持久化：
 
 ```
 state_write(mode="team", active=true, current_phase="team-plan", state={
@@ -244,24 +244,24 @@ state_write(mode="team", active=true, current_phase="team-plan", state={
 })
 ```
 
-> **Note:** The MCP `state_write` tool transports all values as strings. Consumers must coerce `agent_count`, `fix_loop_count`, `max_fix_loops` to numbers and `linked_ralph` to boolean when reading state.
+> **注意：** MCP `state_write` 工具把所有值按字符串传输。消费者读取时必须把 `agent_count`、`fix_loop_count`、`max_fix_loops` 强转为数字，把 `linked_ralph` 强转为 boolean。
 
-**State schema fields:**
+**状态字段 schema：**
 
-| Field | Type | Description |
+| 字段 | 类型 | 描述 |
 |-------|------|-------------|
-| `active` | boolean | Whether team mode is active |
-| `current_phase` | string | Current pipeline stage: `team-plan`, `team-prd`, `team-exec`, `team-verify`, `team-fix` |
-| `team_name` | string | Slug name for the team |
-| `agent_count` | number | Number of worker agents |
-| `agent_types` | string | Comma-separated agent types used in team-exec |
-| `task` | string | Original task description |
-| `fix_loop_count` | number | Current fix iteration count |
-| `max_fix_loops` | number | Maximum fix iterations before failing (default: 3) |
-| `linked_ralph` | boolean | Whether team is linked to a ralph persistence loop |
-| `stage_history` | string | Comma-separated list of stage transitions with timestamps |
+| `active` | boolean | team 模式是否激活 |
+| `current_phase` | string | 当前流水线阶段：`team-plan`、`team-prd`、`team-exec`、`team-verify`、`team-fix` |
+| `team_name` | string | team 的 slug 名 |
+| `agent_count` | number | worker agent 数量 |
+| `agent_types` | string | 逗号分隔的 team-exec 阶段 agent 类型 |
+| `task` | string | 原始任务描述 |
+| `fix_loop_count` | number | 当前 fix 迭代次数 |
+| `max_fix_loops` | number | 失败前的最大 fix 迭代次数（默认：3） |
+| `linked_ralph` | boolean | team 是否与 ralph 持久化循环联动 |
+| `stage_history` | string | 逗号分隔的阶段过渡列表，带时间戳 |
 
-**Update state on every stage transition:**
+**每次阶段过渡时更新状态：**
 
 ```
 state_write(mode="team", current_phase="team-exec", state={
@@ -269,17 +269,17 @@ state_write(mode="team", current_phase="team-exec", state={
 })
 ```
 
-**Read state for resume detection:**
+**读取状态做 resume 检测：**
 
 ```
 state_read(mode="team")
 ```
 
-If `active=true` and `current_phase` is non-terminal, resume from the last incomplete stage instead of creating a new team.
+如果 `active=true` 且 `current_phase` 非终态，从最近的未完成阶段恢复，而不是新建 team。
 
-### Phase 4: Create Tasks
+### Phase 4：创建任务
 
-Call `TaskCreate` for each subtask. Set dependencies with `TaskUpdate` using `addBlockedBy`.
+为每个子任务调用 `TaskCreate`。用 `TaskUpdate` 加 `addBlockedBy` 设置依赖。
 
 ```json
 // TaskCreate for subtask 1
@@ -290,7 +290,7 @@ Call `TaskCreate` for each subtask. Set dependencies with `TaskUpdate` using `ad
 }
 ```
 
-**Response stores a task file (e.g. `1.json`):**
+**响应会存为一个任务文件（例如 `1.json`）：**
 ```json
 {
   "id": "1",
@@ -304,29 +304,29 @@ Call `TaskCreate` for each subtask. Set dependencies with `TaskUpdate` using `ad
 }
 ```
 
-For tasks with dependencies, use `TaskUpdate` after creation:
+对有依赖的任务，创建后用 `TaskUpdate`：
 
 ```json
-// Task #3 depends on task #1 (shared types must be fixed first)
+// 任务 #3 依赖任务 #1（共享类型必须先修）
 {
   "taskId": "3",
   "addBlockedBy": ["1"]
 }
 ```
 
-**Pre-assign owners from the lead** to avoid race conditions (there is no atomic claiming):
+**从 lead 预分配 owner**，避免竞争（没有原子领取机制）：
 
 ```json
-// Assign task #1 to worker-1
+// 把任务 #1 分配给 worker-1
 {
   "taskId": "1",
   "owner": "worker-1"
 }
 ```
 
-### Phase 5: Spawn Teammates
+### Phase 5：派出队友
 
-Spawn N teammates using `Task` with `team_name` and `name` parameters. Each teammate gets the team worker preamble (see below) plus their specific assignment.
+用 `Task` 的 `team_name` 与 `name` 参数派出 N 个队友。每个队友拿到 team worker 前言（见下文）加上自己具体的分配。
 
 ```json
 {
@@ -337,7 +337,7 @@ Spawn N teammates using `Task` with `team_name` and `name` parameters. Each team
 }
 ```
 
-**Response:**
+**响应：**
 ```json
 {
   "agent_id": "worker-1@fix-ts-errors",
@@ -346,71 +346,71 @@ Spawn N teammates using `Task` with `team_name` and `name` parameters. Each team
 }
 ```
 
-**Side effects:**
-- Teammate added to `config.json` members array
-- An **internal task** is auto-created (with `metadata._internal: true`) tracking the agent lifecycle
-- Internal tasks appear in `TaskList` output -- filter them when counting real tasks
+**副作用：**
+- 队友被加入 `config.json` 的 members 数组
+- **internal task** 被自动创建（带 `metadata._internal: true`），跟踪 agent 生命周期
+- internal task 会出现在 `TaskList` 输出里 —— 数真实任务时要过滤掉
 
-**IMPORTANT:** Spawn all teammates in parallel (they are background agents). Do NOT wait for one to finish before spawning the next.
+**重要：** 并行派出所有队友（它们是后台 agent）。**不要**等一个完成再派下一个。
 
-### Phase 6: Monitor
+### Phase 6：监控
 
-The lead orchestrator monitors progress through two channels:
+Lead orchestrator 通过两条通道监控进度：
 
-1. **Inbound messages** -- Teammates send `SendMessage` to `team-lead` when they complete tasks or need help. These arrive automatically as new conversation turns (no polling needed).
+1. **入站消息** —— 队友在完成任务或需要帮助时用 `SendMessage` 发给 `team-lead`。这些消息会自动作为新对话回合到达（不用轮询）。
 
-2. **TaskList polling** -- Periodically call `TaskList` to check overall progress:
+2. **TaskList 轮询** —— 定期调用 `TaskList` 检查整体进度：
    ```
    #1 [completed] Fix type errors in src/auth/ (worker-1)
    #3 [in_progress] Fix type errors in src/api/ (worker-2)
    #5 [pending] Fix type errors in src/utils/ (worker-3)
    ```
-   Format: `#ID [status] subject (owner)`
+   格式：`#ID [status] subject (owner)`
 
-**Coordination actions the lead can take:**
+**Lead 可以采取的协调动作：**
 
-- **Unblock a teammate:** Send a `message` with guidance or missing context
-- **Reassign work:** If a teammate finishes early, use `TaskUpdate` to assign pending tasks to them and notify via `SendMessage`
-- **Handle failures:** If a teammate reports failure, reassign the task or spawn a replacement
+- **解除阻塞：** 发 `message` 给队友带上指导或缺失上下文
+- **重新分配：** 如果队友提前完成，用 `TaskUpdate` 把 pending 任务分给它，并通过 `SendMessage` 通知
+- **处理失败：** 队友报告失败时，重新分配该任务或派一个替代者
 
-#### Task Watchdog Policy
+#### 任务看门狗策略
 
-Monitor for stuck or failed teammates:
+监控卡住或失败的队友：
 
-- **Max in-progress age**: If a task stays `in_progress` for more than 5 minutes without messages, send a status check
-- **Suspected dead worker**: No messages + stuck task for 10+ minutes → reassign task to another worker
-- **Reassign threshold**: If a worker fails 2+ tasks, stop assigning new tasks to it
+- **最大 in-progress 龄期**：任务 `in_progress` 超过 5 分钟无消息，发送状态检查
+- **疑似 worker 死亡**：无消息 + 任务卡住 10+ 分钟 → 把任务转交给其他 worker
+- **重新分配阈值**：worker 失败 2+ 次任务，停止给它分新任务
 
-### Phase 6.5: Stage Transitions (State Persistence)
+### Phase 6.5：阶段过渡（状态持久化）
 
-On every stage transition, update oh-my-kimi state:
+每次阶段过渡时更新 oh-my-kimi 状态：
 
 ```
-// Entering team-exec after planning
+// 规划后进入 team-exec
 state_write(mode="team", current_phase="team-exec", state={
   "stage_history": "team-plan:T1,team-prd:T2,team-exec:T3"
 })
 
-// Entering team-verify after execution
+// 执行后进入 team-verify
 state_write(mode="team", current_phase="team-verify")
 
-// Entering team-fix after verify failure
+// 验证失败后进入 team-fix
 state_write(mode="team", current_phase="team-fix", state={
   "fix_loop_count": 1
 })
 ```
 
-This enables:
-- **Resume**: If the lead crashes, `state_read(mode="team")` reveals the last stage and team name for recovery
-- **Cancel**: The cancel skill reads `current_phase` to know what cleanup is needed
-- **Ralph integration**: Ralph can read team state to know if the pipeline completed or failed
+这能支持：
+- **Resume**：lead 崩溃时，`state_read(mode="team")` 暴露最近的阶段与 team name 用于恢复
+- **Cancel**：cancel skill 读取 `current_phase` 以知道需要哪些清理
+- **Ralph 集成**：Ralph 可以读取 team 状态，知道流水线是完成还是失败
 
-### Phase 7: Completion
+### Phase 7：完成
 
-When all real tasks (non-internal) are completed or failed:
+所有真实任务（非 internal）都 completed 或 failed 时：
 
-1. **Verify results** -- Check that all subtasks are marked `completed` via `TaskList`
-2. **Shutdown teammates** -- Send `shutdown_request` to each active teammate:
+1. **验证结果** —— 通过 `TaskList` 检查所有子任务标为 `completed`
+2. **关闭队友** —— 给每个活跃队友发 `shutdown_request`：
    ```json
    {
      "type": "shutdown_request",
@@ -418,12 +418,12 @@ When all real tasks (non-internal) are completed or failed:
      "content": "All work complete, shutting down team"
    }
    ```
-3. **Await responses** -- Each teammate responds with `shutdown_response(approve: true)` and terminates
-4. **Delete team** -- Call `TeamDelete` to clean up:
+3. **等待回应** —— 每个队友回 `shutdown_response(approve: true)` 并终止
+4. **删除 team** —— 调用 `TeamDelete` 清理：
    ```json
    { "team_name": "fix-ts-errors" }
    ```
-   Response:
+   响应：
    ```json
    {
      "success": true,
@@ -431,12 +431,12 @@ When all real tasks (non-internal) are completed or failed:
      "team_name": "fix-ts-errors"
    }
    ```
-5. **Clean oh-my-kimi state** -- Remove `.omk/state/team-state.json`
-6. **Report summary** -- Present results to the user
+5. **清理 oh-my-kimi 状态** —— 移除 `.omk/state/team-state.json`
+6. **报告汇总** —— 把结果呈现给用户
 
-## Agent Preamble
+## Agent 前言
 
-When spawning teammates, include this preamble in the prompt to establish the work protocol. Adapt it per teammate with their specific task assignments.
+派出队友时，在 prompt 里包含下面这段前言以建立工作协议。按队友的具体任务分配做适配。
 
 ```
 You are a TEAM WORKER in team "{team_name}". Your name is "{worker_name}".
@@ -484,19 +484,19 @@ Do NOT mark the task as completed. Leave it in_progress so the lead can reassign
 - Use SendMessage with type "message" only -- never "broadcast"
 ```
 
-### Agent-Type Prompt Injection (Worker-Specific Addendum)
+### Agent-Type 提示注入（worker 专属附录）
 
-When composing teammate prompts, append a short addendum based on worker type:
+组装队友 prompt 时，按 worker 类型追加一段简短附录：
 
-- `kimi_worker`: Emphasize strict TaskList/TaskUpdate/SendMessage loop and no orchestration commands.
-- `codex_worker`: Emphasize CLI API lifecycle (`omk team api ... --json`) and explicit failure ACKs with stderr.
-- `gemini_worker`: Emphasize bounded file ownership and milestone ACKs after each completed sub-step.
+- `kimi_worker`：强调严格的 TaskList / TaskUpdate / SendMessage 循环，且不准跑编排命令。
+- `codex_worker`：强调 CLI API 生命周期（`omk team api ... --json`），失败要带 stderr 显式 ACK。
+- `gemini_worker`：强调有界的文件 ownership，每完成一个 sub-step 做一次里程碑 ACK。
 
-This addendum must preserve the core rule: **worker = executor only, never leader/orchestrator**.
+该附录必须保留核心规则：**worker = 仅执行者，永远不是 leader / orchestrator**。
 
-## Communication Patterns
+## 通信模式
 
-### Teammate to Lead (task completion report)
+### 队友到 Lead（任务完成报告）
 
 ```json
 {
@@ -507,7 +507,7 @@ This addendum must preserve the core rule: **worker = executor only, never leade
 }
 ```
 
-### Lead to Teammate (reassignment or guidance)
+### Lead 到队友（重新分配或指导）
 
 ```json
 {
@@ -518,7 +518,7 @@ This addendum must preserve the core rule: **worker = executor only, never leade
 }
 ```
 
-### Broadcast (use sparingly -- sends N separate messages)
+### 广播（节制使用 —— 会发送 N 条独立消息）
 
 ```json
 {
@@ -528,18 +528,18 @@ This addendum must preserve the core rule: **worker = executor only, never leade
 }
 ```
 
-### Shutdown Protocol (BLOCKING)
+### Shutdown 协议（阻塞）
 
-**CRITICAL: Steps must execute in exact order. Never call TeamDelete before shutdown is confirmed.**
+**关键：步骤必须按精确顺序执行。`TeamDelete` 永远不要在 shutdown 被确认前调用。**
 
-**Step 1: Verify completion**
+**步骤 1：验证完成**
 ```
 Call TaskList — verify all real tasks (non-internal) are completed or failed.
 ```
 
-**Step 2: Request shutdown from each teammate**
+**步骤 2：向每个队友请求 shutdown**
 
-**Lead sends:**
+**Lead 发送：**
 ```json
 {
   "type": "shutdown_request",
@@ -548,12 +548,12 @@ Call TaskList — verify all real tasks (non-internal) are completed or failed.
 }
 ```
 
-**Step 3: Wait for responses (BLOCKING)**
-- Wait up to 30s per teammate for `shutdown_response`
-- Track which teammates confirmed vs timed out
-- If a teammate doesn't respond within 30s: log warning, mark as unresponsive
+**步骤 3：等待回应（阻塞）**
+- 对每个队友最多等 30 秒以获取 `shutdown_response`
+- 跟踪谁确认、谁超时
+- 30 秒内无回应：记 warning，标为 unresponsive
 
-**Teammate receives and responds:**
+**队友接收并回应：**
 ```json
 {
   "type": "shutdown_response",
@@ -562,75 +562,75 @@ Call TaskList — verify all real tasks (non-internal) are completed or failed.
 }
 ```
 
-After approval:
-- Teammate process terminates
-- Teammate auto-removed from `config.json` members array
-- Internal task for that teammate completes
+批准后：
+- 队友进程终止
+- 队友自动从 `config.json` members 数组移除
+- 该队友的 internal task 完成
 
-**Step 4: TeamDelete — only after ALL teammates confirmed or timed out**
+**步骤 4：TeamDelete —— 在所有队友确认或超时后再调**
 ```json
 { "team_name": "fix-ts-errors" }
 ```
 
-**Step 5: Orphan scan**
+**步骤 5：孤儿扫描**
 
-Check for agent processes that survived TeamDelete:
+检查在 TeamDelete 后仍存活的 agent 进程：
 ```bash
 node "${CLAUDE_PLUGIN_ROOT}/scripts/cleanup-orphans.mjs" --team-name fix-ts-errors
 ```
 
-This scans for processes matching the team name whose config no longer exists, and terminates them (SIGTERM → 5s wait → SIGKILL). Supports `--dry-run` for inspection.
+它会扫描与 team 名匹配但 config 已不存在的进程，并终止它们（SIGTERM → 5 秒等待 → SIGKILL）。支持 `--dry-run` 做检查。
 
-**Shutdown sequence is BLOCKING:** Do not proceed to TeamDelete until all teammates have either:
-- Confirmed shutdown (`shutdown_response` with `approve: true`), OR
-- Timed out (30s with no response)
+**Shutdown 序列是阻塞的：** 在所有队友满足以下任一条件之前，不要进入 TeamDelete：
+- 确认 shutdown（`shutdown_response` 且 `approve: true`），或
+- 超时（30 秒无回应）
 
-**IMPORTANT:** The `request_id` is provided in the shutdown request message that the teammate receives. The teammate must extract it and pass it back. Do NOT fabricate request IDs.
+**重要：** `request_id` 由队友接收到的 shutdown 请求消息提供。队友必须抽取它并原样回传。**不要**伪造 request ID。
 
-## CLI Workers (Codex and Gemini)
+## CLI Worker（Codex 与 Gemini）
 
-The team skill supports **hybrid execution** combining Kimi subagent teammates with external CLI workers (Kimi CLI and Gemini CLI). Both types can make code changes -- they differ in capabilities and cost. These are standalone CLI tools, not MCP servers.
+team skill 支持**混合执行**：Kimi subagent 队友 + 外部 CLI worker（Kimi CLI 与 Gemini CLI）。两类都能改代码 —— 区别在于能力与成本。它们是独立 CLI 工具，不是 MCP server。
 
-### Execution Modes
+### 执行模式
 
-Tasks are tagged with an execution mode during decomposition:
+任务在分解时打上执行模式标签：
 
-| Execution Mode | Provider | Capabilities |
+| 执行模式 | Provider | 能力 |
 |---------------|----------|-------------|
-| `kimi_worker` | Kimi subagent | Full Kimi CLI tool access (Read/Write/Edit/Bash/Task). Best for tasks needing Claude's reasoning + iterative tool use. |
-| `codex_worker` | Kimi CLI (tmux pane) | Full filesystem access in working_directory. Runs autonomously via tmux pane. Best for code review, security analysis, refactoring, architecture. Requires `npm install -g @openai/codex`. |
-| `gemini_worker` | Gemini CLI (tmux pane) | Full filesystem access in working_directory. Runs autonomously via tmux pane. Best for UI/design work, documentation, large-context tasks. Requires `npm install -g @google/gemini-cli`. |
+| `kimi_worker` | Kimi subagent | 完整 Kimi CLI 工具访问（Read / Write / Edit / Bash / Task）。适合需要 Claude 推理 + 迭代式工具使用的任务。 |
+| `codex_worker` | Kimi CLI（tmux pane） | working_directory 内完整文件系统访问。通过 tmux pane 自主跑。适合代码评审、安全分析、重构、架构。需要 `npm install -g @openai/codex`。 |
+| `gemini_worker` | Gemini CLI（tmux pane） | working_directory 内完整文件系统访问。通过 tmux pane 自主跑。适合 UI / 设计、文档、大上下文任务。需要 `npm install -g @google/gemini-cli`。 |
 
-### How CLI Workers Operate
+### CLI Worker 如何工作
 
-Tmux CLI workers run in dedicated tmux panes with filesystem access. They are **autonomous executors**, not just analysts:
+Tmux CLI worker 在专用 tmux pane 中跑，具备文件系统访问。它们是**自主执行者**，不只是分析者：
 
-1. Lead writes task instructions to a prompt file
-2. Lead spawns a tmux CLI worker with `working_directory` set to the project root
-3. The worker reads files, makes changes, runs commands -- all within the working directory
-4. Results/summary are written to an output file
-5. Lead reads the output, marks the task complete, and feeds results to dependent tasks
+1. Lead 把任务说明写入 prompt 文件
+2. Lead 派出一个 tmux CLI worker，`working_directory` 设为项目根
+3. worker 读文件、改文件、跑命令 —— 都限于其工作目录内
+4. 结果 / 汇总写入输出文件
+5. Lead 读取输出，标任务完成，把结果喂给依赖任务
 
-**Key difference from Kimi subagents:**
-- CLI workers operate via tmux, not Kimi CLI's tool system
-- They cannot use TaskList/TaskUpdate/SendMessage (no team awareness)
-- They run as one-shot autonomous jobs, not persistent teammates
-- The lead manages their lifecycle (spawn, monitor, collect results)
+**与 Kimi subagent 的关键区别：**
+- CLI worker 通过 tmux 操作，不走 Kimi CLI 工具系统
+- 不能用 TaskList / TaskUpdate / SendMessage（无 team 感知）
+- 一次性自主作业，不是持久队友
+- 由 Lead 管理其生命周期（spawn、monitor、收集结果）
 
-### When to Route Where
+### 何时路由到哪里
 
-| Task Type | Best Route | Why |
+| 任务类型 | 最佳路由 | 原因 |
 |-----------|-----------|-----|
-| Iterative multi-step work | Kimi subagent | Needs tool-mediated iteration + team communication |
-| Code review / security audit | CLI worker or specialist agent | Autonomous execution, good at structured analysis |
-| Architecture analysis / planning | architect Kimi subagent | Strong analytical reasoning with codebase access |
-| Refactoring (well-scoped) | CLI worker or executor agent | Autonomous execution, good at structured transforms |
-| UI/frontend implementation | designer Kimi subagent | Design expertise, framework idioms |
-| Large-scale documentation | writer Kimi subagent | Writing expertise + large context for consistency |
-| Build/test iteration loops | Kimi subagent | Needs Bash tool + iterative fix cycles |
-| Tasks needing team coordination | Kimi subagent | Needs SendMessage for status updates |
+| 迭代式多步工作 | Kimi subagent | 需要工具中介的迭代 + team 通信 |
+| 代码评审 / 安全审计 | CLI worker 或专家 agent | 自主执行，擅长结构化分析 |
+| 架构分析 / 规划 | architect Kimi subagent | 强分析推理 + 代码库访问 |
+| 范围明确的重构 | CLI worker 或 executor agent | 自主执行，擅长结构化变换 |
+| UI / 前端实现 | designer Kimi subagent | 设计专长、框架习惯 |
+| 大规模文档 | writer Kimi subagent | 写作专长 + 大上下文保证一致性 |
+| 构建 / 测试迭代循环 | Kimi subagent | 需要 Bash 工具 + 迭代式 fix 循环 |
+| 需要团队协调的任务 | Kimi subagent | 需要 SendMessage 做状态更新 |
 
-### Example: Hybrid Team with CLI Workers
+### 示例：带 CLI Worker 的混合 team
 
 ```
 /team 3:executor "refactor auth module with security review"
@@ -643,236 +643,236 @@ Task decomposition:
 #5 [gemini_worker] Final code review of all changes
 ```
 
-The lead runs #1 (Codex security analysis), then #2 and #3 in parallel (Codex refactors backend, designer agent redesigns frontend), then #4 (Kimi subagent handles test iteration), then #5 (Gemini final review).
+Lead 先跑 #1（Codex 安全分析），再并行跑 #2 与 #3（Codex 重构后端、designer agent 重做前端），然后 #4（Kimi subagent 处理测试迭代），最后 #5（Gemini 终审）。
 
-### Pre-flight Analysis (Optional)
+### 预先分析（可选）
 
-For large ambiguous tasks, run analysis before team creation:
+对大而模糊的任务，team 创建前先跑分析：
 
-1. Spawn `Agent(subagent_type="oh-my-kimi:planner", ...)` with task description + codebase context
-2. Use the analysis to produce better task decomposition
-3. Create team and tasks with enriched context
+1. 用任务描述 + 代码库上下文派 `Agent(subagent_type="oh-my-kimi:planner", ...)`
+2. 用分析结果做更好的任务分解
+3. 用更充分的上下文创建 team 与任务
 
-This is especially useful when the task scope is unclear and benefits from external reasoning before committing to a specific decomposition.
+任务范围不清、能从分解前的外部推理中受益时尤其有用。
 
-## Monitor Enhancement: Outbox Auto-Ingestion
+## 监控增强：Outbox 自动摄取
 
-The lead can proactively ingest outbox messages from CLI workers using the outbox reader utilities, enabling event-driven monitoring without relying solely on `SendMessage` delivery.
+Lead 可以利用 outbox reader 工具主动摄取 CLI worker 的 outbox 消息，使监控成为事件驱动，不再单纯依赖 `SendMessage` 投递。
 
-### Outbox Reader Functions
+### Outbox Reader 函数
 
-**`readNewOutboxMessages(teamName, workerName)`** -- Read new outbox messages for a single worker using a byte-offset cursor. Each call advances the cursor, so subsequent calls only return messages written since the last read. Mirrors the inbox cursor pattern from `readNewInboxMessages()`.
+**`readNewOutboxMessages(teamName, workerName)`** —— 用字节偏移游标读取单个 worker 的新 outbox 消息。每次调用推进游标，后续调用只返回自上次读取以来写入的消息。镜像了 `readNewInboxMessages()` 的 inbox 游标模式。
 
-**`readAllTeamOutboxMessages(teamName)`** -- Read new outbox messages from ALL workers in a team. Returns an array of `{ workerName, messages }` entries, skipping workers with no new messages. Useful for batch polling in the monitor loop.
+**`readAllTeamOutboxMessages(teamName)`** —— 读取 team 中所有 worker 的新 outbox 消息。返回 `{ workerName, messages }` 条目数组，跳过没有新消息的 worker。便于在监控循环中做批量轮询。
 
-**`resetOutboxCursor(teamName, workerName)`** -- Reset the outbox cursor for a worker back to byte 0. Useful when re-reading historical messages after a lead restart or for debugging.
+**`resetOutboxCursor(teamName, workerName)`** —— 把某 worker 的 outbox 游标重置回字节 0。lead 重启后想重读历史消息或调试时有用。
 
-### Using `getTeamStatus()` in the Monitor Phase
+### 在监控阶段使用 `getTeamStatus()`
 
-The `getTeamStatus(teamName, workingDirectory, heartbeatMaxAgeMs?)` function provides a unified snapshot combining:
+`getTeamStatus(teamName, workingDirectory, heartbeatMaxAgeMs?)` 函数提供统一快照，包含：
 
-- **Worker registration** -- Which MCP workers are registered (from shadow registry / config.json)
-- **Heartbeat freshness** -- Whether each worker is alive based on heartbeat age
-- **Task progress** -- Per-worker and team-wide task counts (pending, in_progress, completed)
-- **Current task** -- Which task each worker is actively executing
-- **Recent outbox messages** -- New messages since the last status check
+- **Worker 注册** —— 哪些 MCP worker 已注册（来自影子注册表 / config.json）
+- **心跳新鲜度** —— 每个 worker 基于心跳龄期是否还活
+- **任务进度** —— 每个 worker 与全 team 的任务计数（pending、in_progress、completed）
+- **当前任务** —— 每个 worker 正在执行哪个任务
+- **近期 outbox 消息** —— 自上次状态检查以来的新消息
 
-Example usage in the monitor loop:
+监控循环中的示例用法：
 
 ```typescript
 const status = getTeamStatus('fix-ts-errors', workingDirectory);
 
 for (const worker of status.workers) {
   if (!worker.isAlive) {
-    // Worker is dead -- reassign its in-progress tasks
+    // Worker 死了 —— 重新分配它的 in-progress 任务
   }
   for (const msg of worker.recentMessages) {
     if (msg.type === 'task_complete') {
-      // Mark task complete, unblock dependents
+      // 标任务完成，解除依赖者的阻塞
     } else if (msg.type === 'task_failed') {
-      // Handle failure, possibly retry or reassign
+      // 处理失败，可能重试或重新分配
     } else if (msg.type === 'error') {
-      // Log error, check if worker needs intervention
+      // 记 error，看 worker 是否需要介入
     }
   }
 }
 
 if (status.taskSummary.pending === 0 && status.taskSummary.inProgress === 0) {
-  // All work done -- proceed to shutdown
+  // 所有工作完成 —— 进入 shutdown
 }
 ```
 
-### Event-Based Actions from Outbox Messages
+### 基于 Outbox 消息的事件动作
 
-| Message Type | Action |
+| 消息类型 | 动作 |
 |-------------|--------|
-| `task_complete` | Mark task completed, check if blocked tasks are now unblocked, notify dependent workers |
-| `task_failed` | Increment failure sidecar, decide retry vs reassign vs skip |
-| `idle` | Worker has no assigned tasks -- assign pending work or begin shutdown |
-| `error` | Log the error, check `consecutiveErrors` in heartbeat for quarantine threshold |
-| `shutdown_ack` | Worker acknowledged shutdown -- safe to remove from team |
-| `heartbeat` | Update liveness tracking (redundant with heartbeat files but useful for latency monitoring) |
+| `task_complete` | 标任务 completed，检查被阻塞任务是否解锁，通知依赖 worker |
+| `task_failed` | 增加失败 sidecar 计数，决定重试 vs 重新分配 vs 跳过 |
+| `idle` | worker 无分配任务 —— 分新工作或开始 shutdown |
+| `error` | 记 error，检查心跳里的 `consecutiveErrors` 是否触发隔离阈值 |
+| `shutdown_ack` | worker 已确认 shutdown —— 可从 team 移除 |
+| `heartbeat` | 更新存活跟踪（与心跳文件冗余，但对延迟监控有用） |
 
-This approach complements the existing `SendMessage`-based communication by providing a pull-based mechanism for MCP workers that cannot use Kimi CLI's team messaging tools.
+这种方式补足已有的基于 `SendMessage` 的通信，为不能用 Kimi CLI team 消息工具的 MCP worker 提供拉式机制。
 
-## Error Handling
+## 错误处理
 
-### Teammate Fails a Task
+### 队友任务失败
 
-1. Teammate sends `SendMessage` to lead reporting the failure
-2. Lead decides: retry (reassign same task to same or different worker) or skip
-3. To reassign: `TaskUpdate` to set new owner, then `SendMessage` to the new owner
+1. 队友通过 `SendMessage` 报告失败给 lead
+2. Lead 决定：重试（把同任务分给同一或不同 worker）或跳过
+3. 重新分配：用 `TaskUpdate` 设新 owner，然后 `SendMessage` 通知新 owner
 
-### Teammate Gets Stuck (No Messages)
+### 队友卡住（无消息）
 
-1. Lead detects via `TaskList` -- task stuck in `in_progress` for too long
-2. Lead sends `SendMessage` to the teammate asking for status
-3. If no response, consider the teammate dead
-4. Reassign the task to another worker via `TaskUpdate`
+1. Lead 通过 `TaskList` 检测 —— 任务 `in_progress` 太久
+2. Lead 用 `SendMessage` 询问队友状态
+3. 无回应时认为队友已死
+4. 通过 `TaskUpdate` 把任务重新分配给另一个 worker
 
-### Dependency Blocked
+### 依赖阻塞
 
-1. If a blocking task fails, the lead must decide whether to:
-   - Retry the blocker
-   - Remove the dependency (`TaskUpdate` with modified blockedBy)
-   - Skip the blocked task entirely
-2. Communicate decisions to affected teammates via `SendMessage`
+1. 阻塞任务失败时，lead 必须决定：
+   - 重试 blocker
+   - 解除依赖（用修改后的 blockedBy 调 `TaskUpdate`）
+   - 完全跳过被阻塞任务
+2. 通过 `SendMessage` 把决定传达给受影响的队友
 
-### Teammate Crashes
+### 队友崩溃
 
-1. Internal task for that teammate will show unexpected status
-2. Teammate disappears from `config.json` members
-3. Lead reassigns orphaned tasks to remaining workers
-4. If needed, spawn a replacement teammate with `Task(team_name, name)`
+1. 该队友的 internal task 显示非预期状态
+2. 队友从 `config.json` members 中消失
+3. Lead 把孤儿任务重新分配给剩余 worker
+4. 需要时用 `Task(team_name, name)` 派一个替代队友
 
-## Team + Ralph Composition
+## Team + Ralph 组合
 
-When the user invokes `/team ralph`, says "team ralph", or combines both keywords, team mode wraps itself in Ralph's persistence loop. This provides:
+当用户调用 `/team ralph`、说「team ralph」，或同时用上两个关键词时，team 模式把自己包进 Ralph 持久化循环。它提供：
 
-- **Team orchestration** -- multi-agent staged pipeline with specialized agents per stage
-- **Ralph persistence** -- retry on failure, architect verification before completion, iteration tracking
+- **Team 编排** —— 多 agent 分阶段流水线，每阶段配专家
+- **Ralph 持久化** —— 失败重试、完成前 architect 验证、迭代跟踪
 
-### Activation
+### 激活
 
-Team+Ralph activates when:
-1. User invokes `/team ralph "task"` or `/oh-my-kimi:team ralph "task"`
-2. Keyword detector finds both `team` and `ralph` in the prompt
-3. Hook detects `MAGIC KEYWORD: RALPH` alongside team context
+Team+Ralph 在以下情况下激活：
+1. 用户调用 `/team ralph "task"` 或 `/oh-my-kimi:team ralph "task"`
+2. 关键词检测器在 prompt 中同时发现 `team` 与 `ralph`
+3. Hook 在 team 上下文旁检测到 `MAGIC KEYWORD: RALPH`
 
-### State Linkage
+### 状态联动
 
-Both modes write their own state files with cross-references:
+两个模式各自写状态文件，互相交叉引用：
 
 ```
-// Team state (via state_write)
+// Team 状态（通过 state_write）
 state_write(mode="team", active=true, current_phase="team-plan", state={
   "team_name": "build-rest-api",
   "linked_ralph": true,
   "task": "build a complete REST API"
 })
 
-// Ralph state (via state_write)
+// Ralph 状态（通过 state_write）
 state_write(mode="ralph", active=true, iteration=1, max_iterations=10, current_phase="execution", state={
   "linked_team": true,
   "team_name": "build-rest-api"
 })
 ```
 
-### Execution Flow
+### 执行流程
 
-1. Ralph outer loop starts (iteration 1)
-2. Team pipeline runs: `team-plan -> team-prd -> team-exec -> team-verify`
-3. If `team-verify` passes: Ralph runs architect verification (STANDARD tier minimum)
-4. If architect approves: both modes complete, run `/oh-my-kimi:cancel`
-5. If `team-verify` fails OR architect rejects: team enters `team-fix`, then loops back to `team-exec -> team-verify`
-6. If fix loop exceeds `max_fix_loops`: Ralph increments iteration and retries the full pipeline
-7. If Ralph exceeds `max_iterations`: terminal `failed` state
+1. Ralph 外层循环启动（iteration 1）
+2. Team 流水线运行：`team-plan -> team-prd -> team-exec -> team-verify`
+3. `team-verify` 通过：Ralph 跑 architect 验证（至少 STANDARD 等级）
+4. architect 批准：两个模式完成，跑 `/oh-my-kimi:cancel`
+5. `team-verify` 失败或 architect 拒绝：team 进入 `team-fix`，再回到 `team-exec -> team-verify`
+6. fix 循环超过 `max_fix_loops`：Ralph 增加 iteration 并重试整条流水线
+7. Ralph 超过 `max_iterations`：终态 `failed`
 
-### Cancellation
+### 取消
 
-Cancel either mode cancels both:
-- **Cancel Ralph (linked):** Cancel Team first (graceful shutdown), then clear Ralph state
-- **Cancel Team (linked):** Clear Team, mark Ralph iteration cancelled, stop loop
+取消任一模式都取消两者：
+- **Cancel Ralph（联动）：** 先取消 Team（graceful shutdown），再清 Ralph 状态
+- **Cancel Team（联动）：** 清 Team，把 Ralph iteration 标为 cancelled，停止循环
 
-See Cancellation section below for details.
+详见下文「取消」章节。
 
-## Idempotent Recovery
+## 幂等恢复
 
-If the lead crashes mid-run, the team skill should detect existing state and resume:
+如果 lead 在中途崩溃，team skill 应检测已有状态并恢复：
 
-1. Check `${KIMI_CONFIG_DIR:-~/.claude}/teams/` for teams matching the task slug
-2. If found, read `config.json` to discover active members
-3. Resume monitor mode instead of creating a duplicate team
-4. Call `TaskList` to determine current progress
-5. Continue from the monitoring phase
+1. 检查 `${KIMI_CONFIG_DIR:-~/.claude}/teams/` 中匹配 task slug 的 team
+2. 找到时读 `config.json` 发现活跃成员
+3. 进入 monitor 模式，而不是创建新的重复 team
+4. 调用 `TaskList` 确定当前进度
+5. 从监控阶段继续
 
-This prevents duplicate teams and allows graceful recovery from lead failures.
+这能防止 team 重复，并允许从 lead 故障中优雅恢复。
 
-## Comparison: Team vs Legacy Swarm
+## 对比：Team vs 旧版 Swarm
 
-| Aspect | Team (Native) | Swarm (Legacy SQLite) |
+| 方面 | Team（原生） | Swarm（旧版 SQLite） |
 |--------|--------------|----------------------|
-| **Storage** | JSON files in `~/.claude/teams/` and `~/.claude/tasks/` | SQLite in `.omk/state/swarm.db` |
-| **Dependencies** | `better-sqlite3` not needed | Requires `better-sqlite3` npm package |
-| **Task claiming** | `TaskUpdate(owner + in_progress)` -- lead pre-assigns | SQLite IMMEDIATE transaction -- atomic |
-| **Race conditions** | Possible if two agents claim same task (mitigate by pre-assigning) | None (SQLite transactions) |
-| **Communication** | `SendMessage` (DM, broadcast, shutdown) | None (fire-and-forget agents) |
-| **Task dependencies** | Built-in `blocks` / `blockedBy` arrays | Not supported |
-| **Heartbeat** | Automatic idle notifications from Kimi CLI | Manual heartbeat table + polling |
-| **Shutdown** | Graceful request/response protocol | Signal-based termination |
-| **Agent lifecycle** | Auto-tracked via internal tasks + config members | Manual tracking via heartbeat table |
-| **Progress visibility** | `TaskList` shows live status with owner | SQL queries on tasks table |
-| **Conflict prevention** | Owner field (lead-assigned) | Lease-based claiming with timeout |
-| **Crash recovery** | Lead detects via missing messages, reassigns | Auto-release after 5-min lease timeout |
-| **State cleanup** | `TeamDelete` removes everything | Manual `rm` of SQLite database |
+| **存储** | `~/.claude/teams/` 与 `~/.claude/tasks/` 下的 JSON 文件 | `.omk/state/swarm.db` 中的 SQLite |
+| **依赖** | 不需要 `better-sqlite3` | 需要 `better-sqlite3` npm 包 |
+| **任务领取** | `TaskUpdate(owner + in_progress)` —— lead 预分配 | SQLite IMMEDIATE 事务 —— 原子 |
+| **竞争条件** | 可能（两个 agent 抢同一任务），通过预分配缓解 | 无（SQLite 事务） |
+| **通信** | `SendMessage`（DM、broadcast、shutdown） | 无（fire-and-forget agent） |
+| **任务依赖** | 内置 `blocks` / `blockedBy` 数组 | 不支持 |
+| **心跳** | Kimi CLI 自动 idle 通知 | 手动心跳表 + 轮询 |
+| **关闭** | 优雅的请求 / 响应协议 | 基于信号终止 |
+| **Agent 生命周期** | 通过 internal task + config 成员自动跟踪 | 通过心跳表手动跟踪 |
+| **进度可见性** | `TaskList` 实时显示状态与 owner | tasks 表 SQL 查询 |
+| **冲突预防** | owner 字段（lead 分配） | 基于租约的领取 + 超时 |
+| **崩溃恢复** | Lead 通过缺失消息检测、重新分配 | 5 分钟租约超时后自动释放 |
+| **状态清理** | `TeamDelete` 清理一切 | 手动 `rm` SQLite 数据库 |
 
-**When to use Team over Swarm:** Always prefer `/team` for new work. It uses Kimi CLI's built-in infrastructure, requires no external dependencies, supports inter-agent communication, and has task dependency management.
+**何时用 Team 而不用 Swarm：** 新工作始终优先 `/team`。它基于 Kimi CLI 内置基础设施，不需要外部依赖，支持 agent 间通信，并具备任务依赖管理。
 
-## Cancellation
+## 取消
 
-The `/oh-my-kimi:cancel` skill handles team cleanup:
+`/oh-my-kimi:cancel` skill 负责 team 清理：
 
-1. Read team state via `state_read(mode="team")` to get `team_name` and `linked_ralph`
-2. Send `shutdown_request` to all active teammates (from `config.json` members)
-3. Wait for `shutdown_response` from each (15s timeout per member)
-4. Call `TeamDelete` to remove team and task directories
-5. Clear state via `state_clear(mode="team")`
-6. If `linked_ralph` is true, also clear ralph: `state_clear(mode="ralph")`
+1. 通过 `state_read(mode="team")` 读 team 状态，拿到 `team_name` 与 `linked_ralph`
+2. 给所有活跃队友（来自 `config.json` members）发 `shutdown_request`
+3. 等待每个 `shutdown_response`（每个成员超时 15 秒）
+4. 调 `TeamDelete` 移除 team 与任务目录
+5. 通过 `state_clear(mode="team")` 清状态
+6. 如果 `linked_ralph` 为 true，也清 ralph：`state_clear(mode="ralph")`
 
-### Linked Mode Cancellation (Team + Ralph)
+### 联动模式取消（Team + Ralph）
 
-When team is linked to ralph, cancellation follows dependency order:
+team 与 ralph 联动时，取消按依赖顺序进行：
 
-- **Cancel triggered from Ralph context:** Cancel Team first (graceful shutdown of all teammates), then clear Ralph state. This ensures workers are stopped before the persistence loop exits.
-- **Cancel triggered from Team context:** Clear Team state, then mark Ralph as cancelled. Ralph's stop hook will detect the missing team and stop iterating.
-- **Force cancel (`--force`):** Clears both `team` and `ralph` state unconditionally via `state_clear`.
+- **从 Ralph 上下文触发的取消：** 先取消 Team（所有队友 graceful shutdown），再清 Ralph 状态。这能确保 worker 在持久化循环退出前先停。
+- **从 Team 上下文触发的取消：** 清 Team 状态，再把 Ralph 标为 cancelled。Ralph 的 stop hook 会检测到 team 缺失并停止迭代。
+- **强制取消（`--force`）：** 通过 `state_clear` 无条件清掉 `team` 与 `ralph` 状态。
 
-If teammates are unresponsive, `TeamDelete` may fail. In that case, the cancel skill should wait briefly and retry, or inform the user to manually clean up `~/.claude/teams/{team_name}/` and `~/.claude/tasks/{team_name}/`.
+如果队友无响应，`TeamDelete` 可能失败。这时 cancel skill 应短暂等待并重试，或提醒用户手动清理 `~/.claude/teams/{team_name}/` 与 `~/.claude/tasks/{team_name}/`。
 
-## Runtime V2 (Event-Driven)
+## Runtime V2（事件驱动）
 
-When `OMC_RUNTIME_V2=1` is set, the team runtime uses an event-driven architecture instead of the legacy done.json polling watchdog:
+设置 `OMC_RUNTIME_V2=1` 时，team 运行时使用事件驱动架构，替代旧的 done.json 轮询看门狗：
 
-- **No done.json**: Task completion is detected via CLI API lifecycle transitions (claim-task, transition-task-status)
-- **Snapshot-based monitoring**: Each poll cycle takes a point-in-time snapshot of tasks and workers, computes deltas, and emits events
-- **Event log**: All team events are appended to `.omk/state/team/{teamName}/events.jsonl`
-- **Worker status files**: Workers write status to `.omk/state/team/{teamName}/workers/{name}/status.json`
-- **Preserved**: Sentinel gate (blocks premature completion), circuit breaker (dead worker detection), failure sidecars
+- **无 done.json**：任务完成通过 CLI API 生命周期转换（claim-task、transition-task-status）检测
+- **基于快照的监控**：每个轮询周期对任务与 worker 拍点位快照，计算 delta 并发事件
+- **事件日志**：所有 team 事件追加到 `.omk/state/team/{teamName}/events.jsonl`
+- **Worker 状态文件**：worker 把状态写入 `.omk/state/team/{teamName}/workers/{name}/status.json`
+- **保留**：哨兵门（阻止过早完成）、断路器（dead worker 检测）、失败 sidecar
 
-The v2 runtime is feature-flagged and can be enabled per-session. The legacy v1 runtime remains the default.
+v2 运行时由特性开关控制，可按会话开启。旧的 v1 运行时仍是默认。
 
-## Dynamic Scaling
+## 动态伸缩
 
-When `OMC_TEAM_SCALING_ENABLED=1` is set, the team supports mid-session scaling:
+设置 `OMC_TEAM_SCALING_ENABLED=1` 时，team 支持会话中扩缩容：
 
-- **scale_up**: Add workers to a running team (respects max_workers limit)
-- **scale_down**: Remove idle workers with graceful drain (workers finish current task before removal)
-- File-based scaling lock prevents concurrent scale operations
-- Monotonic worker index counter ensures unique worker names across scale events
+- **scale_up**：给运行中的 team 加 worker（遵守 max_workers 上限）
+- **scale_down**：移除 idle worker，并优雅 drain（worker 完成当前任务后再移除）
+- 基于文件的 scaling 锁防止并发 scale 操作
+- 单调递增的 worker index 计数器保证跨 scale 事件的 worker 名唯一
 
-## Configuration
+## 配置
 
-Optional settings live in `.claude/omc.jsonc` (project) or `~/.config/claude-omc/config.jsonc` (user). Project values override user values; `OMC_TEAM_ROLE_OVERRIDES` (env JSON) supersedes both.
+可选配置位于 `.claude/omc.jsonc`（项目）或 `~/.config/claude-omc/config.jsonc`（用户）。项目值覆盖用户值；`OMC_TEAM_ROLE_OVERRIDES`（env JSON）覆盖两者。
 
 ```jsonc
 {
@@ -887,20 +887,20 @@ Optional settings live in `.claude/omc.jsonc` (project) or `~/.config/claude-omc
 }
 ```
 
-- **ops.maxAgents** - Maximum teammates (default: 20)
-- **ops.defaultAgentType** - CLI provider when a `/team` invocation does not specify one (`claude` | `codex` | `gemini`, default: `claude`)
-- **ops.monitorIntervalMs** - How often to poll `TaskList` (default: 30s)
-- **ops.shutdownTimeoutMs** - How long to wait for shutdown responses (default: 15s)
+- **ops.maxAgents** —— 队友上限（默认 20）
+- **ops.defaultAgentType** —— `/team` 调用未指定时的 CLI provider（`claude` | `codex` | `gemini`，默认 `claude`）
+- **ops.monitorIntervalMs** —— 多久轮询一次 `TaskList`（默认 30s）
+- **ops.shutdownTimeoutMs** —— shutdown 响应的等待时长（默认 15s）
 
-> **Note:** Team members do not have a hardcoded model default. Each teammate is a separate Kimi CLI session that inherits the user's configured model. Since teammates can spawn their own subagents, the session model acts as the orchestration layer while subagents can use any model tier.
+> **注意：** team 成员**没有**硬编码的模型默认。每个队友是独立的 Kimi CLI 会话，继承用户配置的模型。由于队友可派出自己的 subagent，会话模型充当编排层，subagent 可使用任意模型层级。
 
-## Per-Role Provider & Model Routing
+## 按角色的 Provider 与模型路由
 
-> **Scope:** Applies to `/team` only. Task-based delegation uses `delegationRouting` (see separate docs). The two systems coexist by design.
+> **作用域：** 只适用于 `/team`。基于任务的委派使用 `delegationRouting`（见单独文档）。两套系统按设计共存。
 
-Declare which provider (`claude`, `codex`, `gemini`) and which model tier should back each canonical role. Routing is resolved **once** at team creation and persisted in `TeamConfig.resolved_routing` — spawn, scale-up, and restart all read from the snapshot, so a role's worker CLI and model are stable for the lifetime of the team.
+声明每个规范化角色应由哪个 provider（`claude`、`codex`、`gemini`）与哪个模型层级承担。路由在 team 创建时**解析一次**并存进 `TeamConfig.resolved_routing` —— spawn、scale-up、restart 都读快照，因此一个角色的 worker CLI 与模型在 team 生命周期内保持稳定。
 
-### Example — user target mapping
+### 示例 —— 用户目标映射
 
 ```jsonc
 // .claude/omc.jsonc
@@ -919,122 +919,122 @@ Declare which provider (`claude`, `codex`, `gemini`) and which model tier should
 }
 ```
 
-| Role | Provider | Model |
+| 角色 | Provider | 模型 |
 |---|---|---|
-| `orchestrator` | claude (pinned) | inherits invoking session |
-| `planner` | claude | `HIGH` (opus) |
-| `analyst` | claude | `HIGH` (opus) |
-| `executor` | claude | `MEDIUM` (sonnet) |
-| `critic` | codex | codex default |
-| `code-reviewer` | gemini | gemini default |
-| `test-engineer` | gemini | `MEDIUM` (sonnet) |
+| `orchestrator` | claude（钉死） | 继承调用会话 |
+| `planner` | claude | `HIGH`（opus） |
+| `analyst` | claude | `HIGH`（opus） |
+| `executor` | claude | `MEDIUM`（sonnet） |
+| `critic` | codex | codex 默认 |
+| `code-reviewer` | gemini | gemini 默认 |
+| `test-engineer` | gemini | `MEDIUM`（sonnet） |
 
-### Canonical roles
+### 规范化角色
 
-`orchestrator`, `planner`, `analyst`, `architect`, `executor`, `debugger`, `critic`, `code-reviewer`, `security-reviewer`, `test-engineer`, `designer`, `writer`, `code-simplifier`, `explore`, `document-specialist`.
+`orchestrator`、`planner`、`analyst`、`architect`、`executor`、`debugger`、`critic`、`code-reviewer`、`security-reviewer`、`test-engineer`、`designer`、`writer`、`code-simplifier`、`explore`、`document-specialist`。
 
-User-friendly aliases normalize via `normalizeDelegationRole()` — e.g. `reviewer` → `code-reviewer`, `quality-reviewer` → `code-reviewer`, `harsh-critic` → `critic`, `build-fixer` → `debugger`. Accepted alias keys are honored during resolved snapshot creation and later stage routing, not just validation. Unknown roles fail validation at parse time.
+用户友好的别名通过 `normalizeDelegationRole()` 归一化 —— 例如 `reviewer` → `code-reviewer`，`quality-reviewer` → `code-reviewer`，`harsh-critic` → `critic`，`build-fixer` → `debugger`。被接受的别名键在解析快照创建与之后的阶段路由中都被识别，不只是用于校验。未知角色在解析时校验失败。
 
-### Spec fields (`TeamRoleAssignmentSpec`)
+### Spec 字段（`TeamRoleAssignmentSpec`）
 
-- **provider** — `"claude" | "codex" | "gemini"`. Omitted → defaults to `claude`.
-- **model** — tier name (`"HIGH" | "MEDIUM" | "LOW"`) or an explicit model ID. Tiers resolve through `routing.tierModels`.
-- **agent** — optional Kimi subagent name (e.g. `"critic"`, `"executor"`). Only honored when the resolved provider is `claude`.
+- **provider** —— `"claude" | "codex" | "gemini"`。省略 → 默认 `claude`。
+- **model** —— 层级名（`"HIGH" | "MEDIUM" | "LOW"`）或显式模型 ID。层级通过 `routing.tierModels` 解析。
+- **agent** —— 可选 Kimi subagent 名（如 `"critic"`、`"executor"`）。仅当解析后的 provider 是 `claude` 时被采纳。
 
-`orchestrator` is pinned to `claude`; only `model` is user-configurable. Any other key on `orchestrator` is rejected by the validator.
+`orchestrator` 钉死为 `claude`；只有 `model` 由用户可配置。`orchestrator` 上的其他键会被校验器拒绝。
 
-### Env override
+### Env 覆盖
 
 ```bash
 OMC_TEAM_ROLE_OVERRIDES='{"critic":{"provider":"codex"},"code-reviewer":{"provider":"gemini"}}'
 ```
 
-Precedence: `OMC_TEAM_ROLE_OVERRIDES` > `.claude/omc.jsonc` (project) > `~/.config/claude-omc/config.jsonc` (user) > built-in defaults. Invalid JSON logs a warning and is ignored — env overrides are best-effort and never abort the run.
+优先级：`OMC_TEAM_ROLE_OVERRIDES` > `.claude/omc.jsonc`（项目） > `~/.config/claude-omc/config.jsonc`（用户） > 内置默认。非法 JSON 记 warning 并忽略 —— env 覆盖是尽力而为，永不中止运行。
 
-### Fallback when a CLI is missing
+### Provider CLI 缺失时的回退
 
-If the CLI for a configured provider is absent from `PATH` at spawn time, `buildLaunchArgs()` throws, the team lead emits a visible `SendMessage` warning, and the runtime falls back to a deterministic Claude assignment pre-computed by `buildResolvedRoutingSnapshot` (same tier + same agent, `provider: "claude"`). Fallback is loud by design — silent fallback is a test failure. Probe provider availability with `omk doctor --team-routing`.
+如果配置的 provider 在 spawn 时 `PATH` 上没有对应 CLI，`buildLaunchArgs()` 抛错，team lead 通过 `SendMessage` 发出可见 warning，运行时回退到 `buildResolvedRoutingSnapshot` 预先计算的确定性 Claude 分配（同层级 + 同 agent，`provider: "claude"`）。回退按设计是显式的 —— 静默回退是测试失败。用 `omk doctor --team-routing` 探测 provider 可用性。
 
-### Stickiness — resolved once, reused everywhere
+### 黏性 —— 一次解析、处处复用
 
-Resolved routing is immutable per team. Editing config mid-team-lifetime does not affect running teams; a new `/team` invocation picks up the new mapping. This guarantees that spawn, scale-up, and worker-restart all see identical routing, including across worktree detaches (the snapshot travels with `TeamConfig`).
+解析后的路由对每个 team 是不可变的。在 team 生命周期中编辑配置不会影响运行中的 team；新一次 `/team` 调用才会使用新映射。这保证 spawn、scale-up 与 worker-restart 看到完全相同的路由，包括跨 worktree detach（快照随 `TeamConfig` 一起走）。
 
-### Zero-config behavior
+### 零配置行为
 
-An empty `team.roleRouting` preserves pre-patch behavior: every worker is Claude, model tiers follow `routing.tierModels`, and `/team 3:executor ...` still spawns three Kimi executors.
+空的 `team.roleRouting` 保留补丁前行为：每个 worker 是 Claude，模型层级跟随 `routing.tierModels`，`/team 3:executor ...` 仍然派出三个 Kimi executor。
 
-## State Cleanup
+## 状态清理
 
-On successful completion:
+成功完成时：
 
-1. `TeamDelete` handles all Kimi CLI state:
-   - Removes `~/.claude/teams/{team_name}/` (config)
-   - Removes `~/.claude/tasks/{team_name}/` (all task files + lock)
-2. oh-my-kimi state cleanup via MCP tools:
+1. `TeamDelete` 负责所有 Kimi CLI 状态：
+   - 移除 `~/.claude/teams/{team_name}/`（config）
+   - 移除 `~/.claude/tasks/{team_name}/`（所有任务文件 + 锁）
+2. oh-my-kimi 状态清理通过 MCP 工具：
    ```
    state_clear(mode="team")
    ```
-   If linked to Ralph:
+   联动到 Ralph 时：
    ```
    state_clear(mode="ralph")
    ```
-3. Or run `/oh-my-kimi:cancel` which handles all cleanup automatically.
+3. 或者跑 `/oh-my-kimi:cancel`，它会自动做所有清理。
 
-**IMPORTANT:** Call `TeamDelete` only AFTER all teammates have been shut down. `TeamDelete` will fail if active members (besides the lead) still exist in the config.
+**重要：** `TeamDelete` 必须在**所有**队友已 shutdown **之后**调用。如果 config 中还有除 lead 之外的活跃成员，`TeamDelete` 会失败。
 
-## Git Worktree Integration
+## Git Worktree 集成
 
-MCP workers can operate in isolated git worktrees to prevent file conflicts between concurrent workers.
+MCP worker 可以在隔离的 git worktree 中工作，防止并发 worker 之间的文件冲突。
 
-### How It Works
+### 工作方式
 
-1. **Worktree creation**: Before spawning a worker, call `createWorkerWorktree(teamName, workerName, repoRoot)` to create an isolated worktree at `.omk/worktrees/{team}/{worker}` with branch `omc-team/{teamName}/{workerName}`.
+1. **创建 worktree**：在派 worker 前调用 `createWorkerWorktree(teamName, workerName, repoRoot)` 在 `.omk/worktrees/{team}/{worker}` 创建隔离 worktree，分支为 `omc-team/{teamName}/{workerName}`。
 
-2. **Worker isolation**: Pass the worktree path as the `workingDirectory` in the worker's `BridgeConfig`. The worker operates exclusively in its own worktree.
+2. **Worker 隔离**：把 worktree 路径作为 worker `BridgeConfig` 的 `workingDirectory` 传入。worker 只在自己的 worktree 内工作。
 
-3. **Merge coordination**: After a worker completes its tasks, use `checkMergeConflicts()` to verify the branch can be cleanly merged, then `mergeWorkerBranch()` to merge with `--no-ff` for clear history.
+3. **合并协调**：worker 完成任务后用 `checkMergeConflicts()` 验证分支可干净合并，再用 `mergeWorkerBranch()` 带 `--no-ff` 合并，留下清晰历史。
 
-4. **Team cleanup**: On team shutdown, call `cleanupTeamWorktrees(teamName, repoRoot)` to remove all worktrees and their branches.
+4. **Team 清理**：team shutdown 时调用 `cleanupTeamWorktrees(teamName, repoRoot)` 移除所有 worktree 与对应分支。
 
-### API Reference
+### API 参考
 
-| Function | Description |
+| 函数 | 描述 |
 |----------|-------------|
-| `createWorkerWorktree(teamName, workerName, repoRoot, baseBranch?)` | Create isolated worktree |
-| `removeWorkerWorktree(teamName, workerName, repoRoot)` | Remove worktree and branch |
-| `listTeamWorktrees(teamName, repoRoot)` | List all team worktrees |
-| `cleanupTeamWorktrees(teamName, repoRoot)` | Remove all team worktrees |
-| `checkMergeConflicts(workerBranch, baseBranch, repoRoot)` | Non-destructive conflict check |
-| `mergeWorkerBranch(workerBranch, baseBranch, repoRoot)` | Merge worker branch (--no-ff) |
-| `mergeAllWorkerBranches(teamName, repoRoot, baseBranch?)` | Merge all completed workers |
+| `createWorkerWorktree(teamName, workerName, repoRoot, baseBranch?)` | 创建隔离 worktree |
+| `removeWorkerWorktree(teamName, workerName, repoRoot)` | 移除 worktree 与分支 |
+| `listTeamWorktrees(teamName, repoRoot)` | 列出所有 team worktree |
+| `cleanupTeamWorktrees(teamName, repoRoot)` | 移除所有 team worktree |
+| `checkMergeConflicts(workerBranch, baseBranch, repoRoot)` | 非破坏性冲突检查 |
+| `mergeWorkerBranch(workerBranch, baseBranch, repoRoot)` | 合并 worker 分支（--no-ff） |
+| `mergeAllWorkerBranches(teamName, repoRoot, baseBranch?)` | 合并所有完成的 worker |
 
-### Important Notes
+### 重要说明
 
-- `createSession()` in `tmux-session.ts` does NOT handle worktree creation — worktree lifecycle is managed separately via `git-worktree.ts`
-- Worktrees are NOT cleaned up on individual worker shutdown — only on team shutdown, to allow post-mortem inspection
-- Branch names are sanitized via `sanitizeName()` to prevent injection
-- All paths are validated against directory traversal
+- `tmux-session.ts` 中的 `createSession()` **不**处理 worktree 创建 —— worktree 生命周期由 `git-worktree.ts` 单独管理
+- 单个 worker shutdown **不**清理 worktree —— 只在 team shutdown 时清理，以便事后检查
+- 分支名通过 `sanitizeName()` 清洗，防止注入
+- 所有路径都做目录穿越校验
 
-## Gotchas
+## 坑
 
-1. **Internal tasks pollute TaskList** -- When a teammate is spawned, the system auto-creates an internal task with `metadata._internal: true`. These appear in `TaskList` output. Filter them when counting real task progress. The subject of an internal task is the teammate's name.
+1. **Internal task 会污染 TaskList** —— 派出队友时系统自动创建带 `metadata._internal: true` 的 internal task。它们会出现在 `TaskList` 输出里。数真实任务进度时要过滤掉。internal task 的 subject 就是队友名。
 
-2. **No atomic claiming** -- Unlike SQLite swarm, there is no transactional guarantee on `TaskUpdate`. Two teammates could race to claim the same task. **Mitigation:** The lead should pre-assign owners via `TaskUpdate(taskId, owner)` before spawning teammates. Teammates should only work on tasks assigned to them.
+2. **没有原子领取** —— 与 SQLite swarm 不同，`TaskUpdate` 没有事务保证。两个队友可能竞争领取同一任务。**缓解：** lead 应在派出队友之前通过 `TaskUpdate(taskId, owner)` 预分配 owner。队友只做分配给自己的任务。
 
-3. **Task IDs are strings** -- IDs are auto-incrementing strings ("1", "2", "3"), not integers. Always pass string values to `taskId` fields.
+3. **Task ID 是字符串** —— ID 是自增字符串（"1"、"2"、"3"），不是整数。`taskId` 字段始终传字符串值。
 
-4. **TeamDelete requires empty team** -- All teammates must be shut down before calling `TeamDelete`. The lead (the only remaining member) is excluded from this check.
+4. **TeamDelete 需要空 team** —— 调 `TeamDelete` 前所有队友必须已 shutdown。lead（仅剩成员）不在此检查内。
 
-5. **Messages are auto-delivered** -- Teammate messages arrive to the lead as new conversation turns. No polling or inbox-checking is needed for inbound messages. However, if the lead is mid-turn (processing), messages queue and deliver when the turn ends.
+5. **消息自动投递** —— 队友消息作为新对话回合到达 lead。入站消息**不**需要轮询或查 inbox。但如果 lead 正在 turn 中（处理中），消息会排队，turn 结束后投递。
 
-6. **Teammate prompt stored in config** -- The full prompt text is stored in `config.json` members array. Do not put secrets or sensitive data in teammate prompts.
+6. **队友 prompt 存在 config 中** —— 完整 prompt 文本存在 `config.json` members 数组里。**不要**把密钥或敏感数据放进队友 prompt。
 
-7. **Members auto-removed on shutdown** -- After a teammate approves shutdown and terminates, it is automatically removed from `config.json`. Do not re-read config expecting to find shut-down teammates.
+7. **成员在 shutdown 后自动移除** —— 队友批准 shutdown 并终止后，会自动从 `config.json` 移除。不要重读 config 期望找到已关闭的队友。
 
-8. **shutdown_response needs request_id** -- The teammate must extract the `request_id` from the incoming shutdown request JSON and pass it back. The format is `shutdown-{timestamp}@{worker-name}`. Fabricating this ID will cause the shutdown to fail silently.
+8. **shutdown_response 需要 request_id** —— 队友必须从入站 shutdown 请求 JSON 中抽取 `request_id` 原样回传。格式是 `shutdown-{timestamp}@{worker-name}`。伪造该 ID 会导致 shutdown 静默失败。
 
-9. **Team name must be a valid slug** -- Use lowercase letters, numbers, and hyphens. Derive from the task description (e.g., "fix TypeScript errors" becomes "fix-ts-errors").
+9. **Team 名必须是合法 slug** —— 用小写字母、数字与连字符。从任务描述派生（例如 "fix TypeScript errors" 派生为 "fix-ts-errors"）。
 
-10. **Broadcast is expensive** -- Each broadcast sends a separate message to every teammate. Use `message` (DM) by default. Only broadcast for truly team-wide critical alerts.
+10. **Broadcast 很贵** —— 每次 broadcast 给每个队友各发一条独立消息。默认用 `message`（DM）。只在真正全 team 范围的关键告警时才广播。
 
-11. **CLI workers are one-shot, not persistent** -- Tmux CLI workers have full filesystem access and CAN make code changes. However, they run as autonomous one-shot jobs -- they cannot use TaskList/TaskUpdate/SendMessage. The lead must manage their lifecycle: write prompt_file, spawn CLI worker, read output_file, mark task complete. They don't participate in team communication like Kimi subagents do.
+11. **CLI worker 是一次性的，不是持久的** —— Tmux CLI worker 有完整文件系统访问，**可以**改代码。但它们是自主一次性作业 —— 不能用 TaskList / TaskUpdate / SendMessage。Lead 必须管理其生命周期：写 prompt_file、派 CLI worker、读 output_file、标任务完成。它们不像 Kimi subagent 那样参与 team 通信。
