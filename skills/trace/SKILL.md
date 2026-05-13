@@ -1,7 +1,7 @@
 ---
 name: trace
 description: 证据驱动的追踪通道，在 Kimi 的 Agent 工具中编排互相竞争的 tracer 假设
-argument-hint: "<要追踪的观察>"
+argument-hint: "<observation to trace>"
 agent: tracer
 level: 2
 ---

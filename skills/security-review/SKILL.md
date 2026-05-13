@@ -1,7 +1,7 @@
 ---
 name: security-review
 description: 面向密钥、注入、authz/authn、不安全 IO、依赖与数据外泄风险的安全评审
-argument-hint: "<diff、文件或功能>"
+argument-hint: "<diff, file or feature>"
 ---
 
 # Security Review

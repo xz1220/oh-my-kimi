@@ -8,44 +8,44 @@ triggers: ["wiki", "wiki this", "wiki add", "wiki lint", "wiki query"]
 
 项目与会话知识的持久化、自维护 markdown 知识库。灵感来自 Karpathy 的 LLM Wiki 概念。
 
-## 操作
+## Operations
 
-### 写入
+### Ingest
 把知识处理成 wiki 页面。一次 ingest 可以同时改动多页。
 
 ```
 wiki_ingest({ title: "Auth Architecture", content: "...", tags: ["auth", "architecture"], category: "architecture" })
 ```
 
-### 查询
+### Query
 按关键词与标签跨所有 wiki 页面搜索。返回匹配的页面与片段 —— 由你（LLM）基于结果综合给出带引用的回答。
 
 ```
 wiki_query({ query: "authentication", tags: ["auth"], category: "architecture" })
 ```
 
-### 检查
+### Lint
 对 wiki 做健康检查。检测孤页、过时内容、断开的交叉引用、超大页面与结构性矛盾。
 
 ```
 wiki_lint()
 ```
 
-### 快速添加
+### Quick Add
 快速添加单页（比 ingest 更简单）。
 
 ```
 wiki_add({ title: "Page Title", content: "...", tags: ["tag1"], category: "decision" })
 ```
 
-### 列出 / 读取 / 删除
+### List / Read / Delete
 ```
 wiki_list()           # 列出所有页面（读 index.md）
 wiki_read({ page: "auth-architecture" })  # 读指定页面
 wiki_delete({ page: "outdated-page" })    # 删除页面
 ```
 
-### 日志
+### Log
 通过读 `.omk/wiki/log.md` 查看 wiki 操作历史。
 
 ## 分类
