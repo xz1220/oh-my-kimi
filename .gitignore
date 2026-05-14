@@ -10,3 +10,6 @@ __pycache__/
 
 # Local clones of upstream oh-my-* repos for gap-analysis (never committed)
 .upstream-refs/
+
+# Claude Code local worktree state
+.claude/
